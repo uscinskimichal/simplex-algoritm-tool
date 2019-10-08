@@ -2,17 +2,20 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
 
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("/view/sample.fxml"));
-        primaryStage.setTitle("Hello World");
+        Parent root = FXMLLoader.load(getClass().getResource("/view/MainWindowView.fxml"));
+        primaryStage.setTitle("Simple simplex algorithm calculator");
         primaryStage.setScene(new Scene(root, 500, 375));
-        primaryStage.show();
         primaryStage.setResizable(false);
+        primaryStage.getIcons().add(new Image("/image/ApplicationIcon.png"));
+        primaryStage.show();
     }
 
 
