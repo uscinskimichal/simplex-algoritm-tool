@@ -1,24 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
 
-
-<GridPane alignment="center" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.172-ea" fx:controller="controllers.MainWindowController">
-   <columnConstraints>
-      <ColumnConstraints />
-   </columnConstraints>
-   <rowConstraints>
-      <RowConstraints />
-   </rowConstraints>
-   <children>
-      <AnchorPane prefHeight="274.0" prefWidth="300.0">
+<BorderPane fx:id="borderPane" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainWindowController">
+   <center>
+      <AnchorPane fx:id="anchorPane" prefHeight="260.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
-            <Label layoutX="78.0" layoutY="72.0" prefHeight="99.0" prefWidth="175.0" text="NO HEJ" />
+            <Label layoutX="237.0" layoutY="33.0" prefHeight="17.0" prefWidth="107.0" text="Liczba zmiennych:" />
+            <Label layoutX="26.0" layoutY="33.0" text="Liczba ograniczeń:" />
+            <Button fx:id="generateButton" layoutX="514.0" layoutY="29.0" mnemonicParsing="false" onAction="#generate" text="Generuj" />
+            <Separator layoutY="69.0" prefHeight="0.0" prefWidth="615.0" />
+            <ComboBox fx:id="numberOfConstraintsComboBox" layoutX="126.0" layoutY="29.0" prefHeight="25.0" prefWidth="54.0" />
+            <ComboBox fx:id="numberOfVariablesComboBox" layoutX="346.0" layoutY="29.0" prefHeight="25.0" prefWidth="32.0" />
+            <Pane fx:id="mainPane" layoutX="3.0" layoutY="71.0" prefHeight="88.0" prefWidth="600.0">
+               <children>
+                  <Label fx:id="funkcjaCeluLabel" layoutX="229.0" layoutY="8.0" text="Funkcja celu: ">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="ZLabel" layoutX="14.0" layoutY="40.0" text="Z = ">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="comboBoxFunctionCriteria" layoutX="46.0" layoutY="40.0" prefHeight="25.0" prefWidth="78.0" />
+                  <Label fx:id="ograniczeniaLabel" layoutX="229.0" layoutY="102.0" prefHeight="27.0" prefWidth="127.0" text="Ograniczenia:">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Separator layoutY="160.0" prefHeight="0.0" prefWidth="615.0" />
+            <Pane fx:id="constraintsPane" layoutY="160.0" prefHeight="416.0" prefWidth="615.0" />
+            <Pane fx:id="variablesPane" layoutX="130.0" layoutY="71.0" prefHeight="88.0" prefWidth="473.0" />
          </children>
       </AnchorPane>
-   </children>
-</GridPane>
+   </center>
+   <top>
+      <MenuBar prefHeight="25.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <menus>
+            <Menu mnemonicParsing="false" text="File">
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#close" text="Close" />
+               </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Edit">
+               <items>
+                  <MenuItem mnemonicParsing="false" text="Delete" />
+               </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Help">
+               <items>
+                  <MenuItem mnemonicParsing="false" text="About" />
+               </items>
+            </Menu>
+         </menus>
+      </MenuBar>
+   </top>
+</BorderPane>
