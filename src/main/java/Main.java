@@ -7,7 +7,6 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 
-
 public class Main extends Application {
 
     private Configuration configuration;
@@ -23,14 +22,18 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, configuration.getSceneWidth(), configuration.getSceneHeight()));
         primaryStage.setResizable(false);
         primaryStage.getIcons().add(new Image("/image/ApplicationIcon.png"));
+        setOnCloseRequest(primaryStage);
+        primaryStage.show();
+    }
+
+
+    private void setOnCloseRequest(Stage primaryStage) {
         primaryStage.setOnCloseRequest(event -> {
             if (Dialog.popConfirmationDialog("Czy jesteś pewien", "Czy na pewno chcesz wyjść?", "Wyjście"))
                 primaryStage.close();
             event.consume();
         });
-        primaryStage.show();
     }
-
 
     public static void main(String[] args) {
         launch(args);

@@ -14,10 +14,9 @@
          <children>
             <Label layoutX="237.0" layoutY="33.0" prefHeight="17.0" prefWidth="107.0" text="Liczba zmiennych:" />
             <Label layoutX="26.0" layoutY="33.0" text="Liczba ograniczeń:" />
-            <Button fx:id="generateButton" layoutX="514.0" layoutY="29.0" mnemonicParsing="false" onAction="#generate" text="Generuj" />
             <Separator layoutY="69.0" prefHeight="0.0" prefWidth="615.0" />
-            <ComboBox fx:id="numberOfConstraintsComboBox" layoutX="126.0" layoutY="29.0" prefHeight="25.0" prefWidth="54.0" />
-            <ComboBox fx:id="numberOfVariablesComboBox" layoutX="346.0" layoutY="29.0" prefHeight="25.0" prefWidth="32.0" />
+            <ComboBox fx:id="numberOfConstraintsComboBox" layoutX="126.0" layoutY="29.0" onAction="#generate" prefHeight="25.0" prefWidth="54.0" />
+            <ComboBox fx:id="numberOfVariablesComboBox" layoutX="346.0" layoutY="29.0" onAction="#generate" prefHeight="25.0" prefWidth="32.0" />
             <Pane fx:id="mainPane" layoutX="3.0" layoutY="71.0" prefHeight="88.0" prefWidth="600.0">
                <children>
                   <Label fx:id="funkcjaCeluLabel" layoutX="229.0" layoutY="8.0" text="Funkcja celu: ">
@@ -41,6 +40,8 @@
             <Separator layoutY="160.0" prefHeight="0.0" prefWidth="615.0" />
             <Pane fx:id="constraintsPane" layoutY="160.0" prefHeight="416.0" prefWidth="615.0" />
             <Pane fx:id="variablesPane" layoutX="130.0" layoutY="71.0" prefHeight="88.0" prefWidth="473.0" />
+            <Button fx:id="solveButton" layoutX="531.0" layoutY="29.0" mnemonicParsing="false" onAction="#solve" text="Oblicz" />
+            <Button layoutX="455.0" layoutY="29.0" mnemonicParsing="false" onAction="#generate" text="Wyczyść" />
          </children>
       </AnchorPane>
    </center>
@@ -52,14 +53,19 @@
                   <MenuItem mnemonicParsing="false" onAction="#close" text="Close" />
                </items>
             </Menu>
-            <Menu mnemonicParsing="false" text="Edit">
+            <Menu mnemonicParsing="false" text="Przykłady">
                <items>
-                  <MenuItem mnemonicParsing="false" text="Delete" />
+                  <MenuItem mnemonicParsing="false" onAction="#firstExample" text="Przykład 1" />
+                  <MenuItem mnemonicParsing="false" onAction="#secondExample" text="Przykład 2" />
+                  <MenuItem mnemonicParsing="false" onAction="#thirdExample" text="Przykład 3" />
+                  <MenuItem mnemonicParsing="false" onAction="#fourthExample" text="Przykład 4" />
+                  <MenuItem mnemonicParsing="false" onAction="#fifthExample" text="Przykład 5" />
                </items>
             </Menu>
-            <Menu mnemonicParsing="false" text="Help">
+            <Menu mnemonicParsing="false" text="Informacje">
                <items>
-                  <MenuItem mnemonicParsing="false" text="About" />
+                  <MenuItem mnemonicParsing="false" onAction="#popAboutWindow" text="Autor" />
+                  <MenuItem mnemonicParsing="false" text="O programie" />
                </items>
             </Menu>
          </menus>

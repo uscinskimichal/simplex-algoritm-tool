@@ -1,31 +1,47 @@
 package controllers;
 
 import dialogs.Dialog;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import services.SimplexCore;
 import util.Navigate;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 
 public class MainWindowController extends Navigate implements Initializable {
 
-    // ObservableList<Label> labels = FXCollections.observableArrayList();
-    // ObservableList<TextField> fields = FXCollections.observableArrayList();
+    List<TextField> variablesTextFieldList = new ArrayList<>();
+    List<List<TextField>> listConstraintsTextFieldList = new ArrayList<>();
+    List<ComboBox<String>> constraintMarkComboBoxList = new ArrayList<>();
 
     @FXML
     private AnchorPane anchorPane;
+
+    @FXML
+    private Button solveButton;
 
     @FXML
     private BorderPane borderPane;
@@ -77,50 +93,216 @@ public class MainWindowController extends Navigate implements Initializable {
         comboBox.setItems(FXCollections.observableArrayList("<=", ">=", "="));
         comboBox.getSelectionModel().select(0);
         pane.getChildren().add(comboBox);
+        constraintMarkComboBoxList.add(comboBox);
         return comboBox;
     }
 
-
     private void generateVariables() {
-        variablesPane.getChildren().clear();
-
         for (int variables = 0; variables < numberOfVariablesComboBox.getValue(); variables++) {
             addLabel("X" + (variables + 1) + " + ", 71 + 80 * variables, 44, variablesPane, variables);
-            addTextField(20 + 80 * variables, 40, Pos.CENTER_RIGHT, variablesPane);
+            variablesTextFieldList.add(addTextField(20 + 80 * variables, 40, Pos.CENTER_RIGHT, variablesPane));
+
         }
 
         //changeScene(borderPane, "TestWindowView.fxml");
     }
 
     private void generateConstraints() {
-        constraintsPane.getChildren().clear();
-
         for (int constraints = 0; constraints < numberOfConstraintsComboBox.getValue(); constraints++) {
-            addLabel((constraints + 1) + " ) ", 21, 50 + 35 * constraints, constraintsPane);
-            addComboBoxString(50 + numberOfVariablesComboBox.getValue() * 80, 46 + 35 * constraints, constraintsPane);
-            addTextField(120 + numberOfVariablesComboBox.getValue() * 80, 46 + constraints * 35, Pos.CENTER, constraintsPane);
+            List<TextField> singleRowConstraint = new ArrayList<>();
+            listConstraintsTextFieldList.add(singleRowConstraint);
 
             for (int variables = 0; variables < numberOfVariablesComboBox.getValue(); variables++) {
                 addLabel("X" + (variables + 1) + " + ", 101 + 80 * variables, 50 + constraints * 35, constraintsPane, variables);
-                addTextField(50 + 80 * variables, 46 + constraints * 35, Pos.CENTER_RIGHT, constraintsPane);
+                singleRowConstraint.add(addTextField(50 + 80 * variables, 46 + constraints * 35, Pos.CENTER_RIGHT, constraintsPane));
             }
+
+            addLabel((constraints + 1) + " ) ", 21, 50 + 35 * constraints, constraintsPane);
+            addComboBoxString(50 + numberOfVariablesComboBox.getValue() * 80, 46 + 35 * constraints, constraintsPane);
+            singleRowConstraint.add(addTextField(120 + numberOfVariablesComboBox.getValue() * 80, 46 + constraints * 35, Pos.CENTER, constraintsPane));
+
         }
     }
 
+    private void eraseData() {
+        constraintMarkComboBoxList.clear();
+        variablesPane.getChildren().clear();
+        constraintsPane.getChildren().clear();
+        variablesTextFieldList.clear();
+        listConstraintsTextFieldList.clear();
+    }
 
-    /// TO DO SPOSOB ODNOSZENIA SIE DO POSZCEGOLNYCH POL, LISTA CZY COS
+    @FXML
+    void popAboutWindow() throws IOException {
+        Stage stage = new Stage();
+        Parent root = FXMLLoader.load(getClass().getResource("/view/AboutWindowView.fxml"));
+        stage.setTitle("Autor");
+        stage.setScene(new Scene(root, 200, 200));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
+
+    }
 
     @FXML
     void generate() {
+        eraseData();
         generateVariables();
         generateConstraints();
     }
 
     @FXML
-    void close(ActionEvent event) {
-        if (Dialog.popConfirmationDialog("Czy jesteś pewien?", "Czy na pewno chcesz wyjść?", "Wyjście")) {
-            Platform.exit();
+    void solve() {
+        boolean maximization;
+        if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
+            maximization = true;
+        else
+            maximization = false;
+
+        try {
+            SimplexCore simplexCore = new SimplexCore(
+                    variablesTextFieldList
+                            .stream()
+                            .map(a -> {
+                                if (a.getText().isEmpty())
+                                    return new Double(0);
+                                else
+                                    return new Double(Double.parseDouble(a.getText()));
+                            })
+                            .collect(Collectors.toList())
+                    ,
+                    listConstraintsTextFieldList
+                            .stream()
+                            .map(a -> a.stream()
+                                    .map(b -> {
+                                        if (b.getText().isEmpty())
+                                            return new Double(0);
+                                        else
+                                            return new Double(Double.parseDouble(b.getText()));
+                                    }).collect(Collectors.toList())).collect(Collectors.toList())
+                    ,
+
+                    maximization
+                    ,
+                    constraintMarkComboBoxList
+                            .stream()
+                            .map(a -> {
+                                if (a.getSelectionModel().getSelectedItem().equals("=")) {
+                                    return new String("EQUAL");
+                                } else if (a.getSelectionModel().getSelectedItem().equals("<="))
+                                    return new String("LOWER_OR_EQUAL");
+                                else
+                                    return new String("GREATER_OR_EQUAL");
+                            })
+                            .collect(Collectors.toList()
+                            ));
+
+        } catch (NumberFormatException nfe) {
+            Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\"");
         }
+
+    }
+
+    @FXML
+    void firstExample(ActionEvent event) {
+        numberOfVariablesComboBox.getSelectionModel().select(2);
+        numberOfConstraintsComboBox.getSelectionModel().select(2);
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
+
+        generate();
+
+        variablesTextFieldList.get(0).setText("3");
+        variablesTextFieldList.get(1).setText("5");
+        variablesTextFieldList.get(2).setText("2");
+
+        listConstraintsTextFieldList.get(0).get(0).setText("3");
+        listConstraintsTextFieldList.get(0).get(1).setText("2");
+        listConstraintsTextFieldList.get(0).get(2).setText("4");
+        listConstraintsTextFieldList.get(0).get(3).setText("50");
+
+        listConstraintsTextFieldList.get(1).get(0).setText("7");
+        listConstraintsTextFieldList.get(1).get(1).setText("6");
+        listConstraintsTextFieldList.get(1).get(2).setText("4");
+        listConstraintsTextFieldList.get(1).get(3).setText("100");
+
+        listConstraintsTextFieldList.get(2).get(0).setText("5");
+        listConstraintsTextFieldList.get(2).get(1).setText("2");
+        listConstraintsTextFieldList.get(2).get(2).setText("12");
+        listConstraintsTextFieldList.get(2).get(3).setText("70");
+
+
+        constraintMarkComboBoxList.get(0).getSelectionModel().select(0);
+        constraintMarkComboBoxList.get(1).getSelectionModel().select(1);
+        constraintMarkComboBoxList.get(2).getSelectionModel().select(2);
+    }
+
+    @FXML
+    void secondExample(ActionEvent event) {
+        numberOfVariablesComboBox.getSelectionModel().select(1);
+        numberOfConstraintsComboBox.getSelectionModel().select(1);
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
+
+        generate();
+
+        variablesTextFieldList.get(0).setText("4");
+        variablesTextFieldList.get(1).setText("5");
+
+        listConstraintsTextFieldList.get(0).get(0).setText("20");
+        listConstraintsTextFieldList.get(0).get(1).setText("30");
+        listConstraintsTextFieldList.get(0).get(2).setText("100");
+
+        listConstraintsTextFieldList.get(1).get(0).setText("6");
+        listConstraintsTextFieldList.get(1).get(1).setText("0");
+        listConstraintsTextFieldList.get(1).get(2).setText("5");
+
+        constraintMarkComboBoxList.get(0).getSelectionModel().select(0);
+        constraintMarkComboBoxList.get(1).getSelectionModel().select(0);
+    }
+
+    @FXML
+    void thirdExample(ActionEvent event) {
+        numberOfVariablesComboBox.getSelectionModel().select(3);
+        numberOfConstraintsComboBox.getSelectionModel().select(2);
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
+
+        generate();
+
+        variablesTextFieldList.get(0).setText("2");
+        variablesTextFieldList.get(1).setText("4");
+        variablesTextFieldList.get(2).setText("6");
+        variablesTextFieldList.get(3).setText("8");
+
+        listConstraintsTextFieldList.get(0).get(0).setText("4");
+        listConstraintsTextFieldList.get(0).get(1).setText("0");
+        listConstraintsTextFieldList.get(0).get(2).setText("0");
+        listConstraintsTextFieldList.get(0).get(3).setText("0");
+        listConstraintsTextFieldList.get(0).get(4).setText("10");
+
+        listConstraintsTextFieldList.get(1).get(0).setText("2");
+        listConstraintsTextFieldList.get(1).get(1).setText("2");
+        listConstraintsTextFieldList.get(1).get(2).setText("2");
+        listConstraintsTextFieldList.get(1).get(3).setText("2");
+        listConstraintsTextFieldList.get(1).get(4).setText("200");
+
+        listConstraintsTextFieldList.get(2).get(0).setText("4");
+        listConstraintsTextFieldList.get(2).get(1).setText("0");
+        listConstraintsTextFieldList.get(2).get(2).setText("2");
+        listConstraintsTextFieldList.get(2).get(3).setText("4");
+        listConstraintsTextFieldList.get(2).get(4).setText("76");
+
+        comboBoxFunctionCriteria.getSelectionModel().select(1);
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
+    }
+
+    @FXML
+    void fourthExample(ActionEvent event) {
+        System.out.println("TO DO EXAMPLE");
+    }
+
+    @FXML
+    void fifthExample(ActionEvent event) {
+        System.out.println("TO DO EXAMPLE");
     }
 
 
@@ -132,6 +314,7 @@ public class MainWindowController extends Navigate implements Initializable {
         numberOfVariablesComboBox.getSelectionModel().select(2);
         numberOfConstraintsComboBox.getSelectionModel().select(2);
 
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
         generate();
     }
 }
