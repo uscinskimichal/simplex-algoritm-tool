@@ -4,11 +4,8 @@ import dialogs.Dialog;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -16,12 +13,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import services.SimplexCore;
 import util.Navigate;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +30,7 @@ public class MainWindowController extends Navigate implements Initializable {
     List<TextField> variablesTextFieldList = new ArrayList<>();
     List<List<TextField>> listConstraintsTextFieldList = new ArrayList<>();
     List<ComboBox<String>> constraintMarkComboBoxList = new ArrayList<>();
+
 
     @FXML
     private AnchorPane anchorPane;
@@ -131,16 +128,15 @@ public class MainWindowController extends Navigate implements Initializable {
     }
 
     @FXML
-    void popAboutWindow() throws IOException {
-        Stage stage = new Stage();
-        Parent root = FXMLLoader.load(getClass().getResource("/view/AboutWindowView.fxml"));
-        stage.setTitle("Autor");
-        stage.setScene(new Scene(root, 200, 200));
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
-
+    void popAuthorWindow() throws IOException {
+        popNewWindow("/view/AuthorWindowView.fxml", "Autor" , 300, 300);
     }
+
+    @FXML
+    void popAboutWindow() throws IOException {
+        popNewWindow("/view/AboutWindowView.fxml", "O programie" , 300, 300);
+    }
+
 
     @FXML
     void generate() {
@@ -150,7 +146,7 @@ public class MainWindowController extends Navigate implements Initializable {
     }
 
     @FXML
-    void solve() {
+    void solve() throws IOException {
         boolean maximization;
         if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
             maximization = true;
@@ -163,9 +159,9 @@ public class MainWindowController extends Navigate implements Initializable {
                             .stream()
                             .map(a -> {
                                 if (a.getText().isEmpty())
-                                    return new Double(0);
+                                    return new BigDecimal("0");
                                 else
-                                    return new Double(Double.parseDouble(a.getText()));
+                                    return new BigDecimal(a.getText());
                             })
                             .collect(Collectors.toList())
                     ,
@@ -174,9 +170,9 @@ public class MainWindowController extends Navigate implements Initializable {
                             .map(a -> a.stream()
                                     .map(b -> {
                                         if (b.getText().isEmpty())
-                                            return new Double(0);
+                                            return new BigDecimal("0");
                                         else
-                                            return new Double(Double.parseDouble(b.getText()));
+                                            return new BigDecimal(b.getText());
                                     }).collect(Collectors.toList())).collect(Collectors.toList())
                     ,
 
@@ -184,20 +180,16 @@ public class MainWindowController extends Navigate implements Initializable {
                     ,
                     constraintMarkComboBoxList
                             .stream()
-                            .map(a -> {
-                                if (a.getSelectionModel().getSelectedItem().equals("=")) {
-                                    return new String("EQUAL");
-                                } else if (a.getSelectionModel().getSelectedItem().equals("<="))
-                                    return new String("LOWER_OR_EQUAL");
-                                else
-                                    return new String("GREATER_OR_EQUAL");
-                            })
+                            .map(a -> a.getSelectionModel().getSelectedItem())
                             .collect(Collectors.toList()
                             ));
 
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\"");
         }
+
+
+
 
     }
 

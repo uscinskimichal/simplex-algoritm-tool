@@ -48,11 +48,6 @@
    <top>
       <MenuBar prefHeight="25.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <menus>
-            <Menu mnemonicParsing="false" text="File">
-               <items>
-                  <MenuItem mnemonicParsing="false" onAction="#close" text="Close" />
-               </items>
-            </Menu>
             <Menu mnemonicParsing="false" text="Przykłady">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#firstExample" text="Przykład 1" />
@@ -64,8 +59,8 @@
             </Menu>
             <Menu mnemonicParsing="false" text="Informacje">
                <items>
-                  <MenuItem mnemonicParsing="false" onAction="#popAboutWindow" text="Autor" />
-                  <MenuItem mnemonicParsing="false" text="O programie" />
+                  <MenuItem mnemonicParsing="false" onAction="#popAuthorWindow" text="Autor" />
+                  <MenuItem mnemonicParsing="false" onAction="#popAboutWindow" text="O programie" />
                </items>
             </Menu>
          </menus>
