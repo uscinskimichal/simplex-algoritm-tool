@@ -159,7 +159,7 @@ public class MainWindowController extends Navigate implements Initializable {
                             .stream()
                             .map(a -> {
                                 if (a.getText().isEmpty())
-                                    return new BigDecimal("0");
+                                    throw new NumberFormatException();
                                 else
                                     return new BigDecimal(a.getText());
                             })
@@ -170,7 +170,7 @@ public class MainWindowController extends Navigate implements Initializable {
                             .map(a -> a.stream()
                                     .map(b -> {
                                         if (b.getText().isEmpty())
-                                            return new BigDecimal("0");
+                                            throw new NumberFormatException();
                                         else
                                             return new BigDecimal(b.getText());
                                     }).collect(Collectors.toList())).collect(Collectors.toList())
@@ -185,7 +185,7 @@ public class MainWindowController extends Navigate implements Initializable {
                             ));
 
         } catch (NumberFormatException nfe) {
-            Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\"");
+            Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
         }
 
 
