@@ -1,6 +1,7 @@
 package services;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +20,7 @@ public class SimplexCore {
     List<BigDecimal> listOfCoefficientsOfVariables;
     List<BigDecimal> listOfDifferenceVariablesAndCoefficients;
     List<BigDecimal> listOfBasicConstraintsDividedByXi;
+    ArrayList<List<BigDecimal>> listOfConstraintsClone = new ArrayList<>();
     boolean maximization;
 
     public SimplexCore(List<BigDecimal> listOfVariables, List<List<BigDecimal>> listOfConstraints, boolean maximization, List<String> listOfConstraintsMark) {
@@ -34,13 +36,18 @@ public class SimplexCore {
         listOfCoefficientsOfVariables = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
         listOfDifferenceVariablesAndCoefficients = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
 
-        //writeData();
+        writeData();
         printBasisIndexes();
 
         calculateCoeficcients();
         calculateVariablesAndCoeffDifference();
 
         calculateDecisionVector();
+
+        System.out.println("LEAVING : " + getIndexVariableLeavingBasis());
+        System.out.println("ENTERGIN : " + getIndexVariableEnteringBasis());
+
+        setNewTable();
     }
 
     private void extractRightSidesOfConstraints() {
@@ -51,7 +58,6 @@ public class SimplexCore {
             System.out.println("PRAWA STRONA OGRANICZENIA :" + i + " = " + listRightSideOfConstraints.get(i));
         }
     }
-
 
     private void writeData() {
         System.out.println("F : CELU:");
@@ -143,6 +149,14 @@ public class SimplexCore {
         }
     }
 
+    private int getPivotIndex() {
+        if (maximization)
+            return getPivotElementMAX();
+        else
+            return getPivotElementMIN();
+    }
+
+
     private int getPivotElementMAX() {
         System.out.println("MAX ELEMENT : " + Collections.max(listOfDifferenceVariablesAndCoefficients));
         return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.max(listOfDifferenceVariablesAndCoefficients));
@@ -163,6 +177,11 @@ public class SimplexCore {
         int i = 0;
         try {
             for (i = 0; i < numberOfConstraints; i++) {
+
+                if (listOfConstraints.get(i).get(index).doubleValue() < 0)
+                    listOfBasicConstraintsDividedByXi
+                            .set(i, null);
+
                 listOfBasicConstraintsDividedByXi
                         .set(i, listRightSideOfConstraints.get(i)
                                 .divide(listOfConstraints.get(i).get(index), 4, RoundingMode.HALF_UP));
@@ -172,4 +191,72 @@ public class SimplexCore {
         }
         listOfBasicConstraintsDividedByXi.forEach(a -> System.out.println("DECISION VECTOR : " + a));
     }
+
+
+    private int getIndexVariableLeavingBasis() {
+        return listOfBasicConstraintsDividedByXi.indexOf(Collections.min(listOfBasicConstraintsDividedByXi));
+    }
+
+    private int getIndexVariableEnteringBasis() {
+        if (maximization)
+            return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.max(listOfDifferenceVariablesAndCoefficients)); //MAX
+        else
+            return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.min(listOfDifferenceVariablesAndCoefficients)); //MIN
+
+    }
+
+    private void setNewTable() {
+        listOfConstraintsClone = (ArrayList) listOfConstraints;
+        int pivotIndex = getPivotIndex();
+        int indexLeaving = getIndexVariableLeavingBasis();
+        int indexEntering = getIndexVariableEnteringBasis();
+        BigDecimal pivotValue = listOfConstraints.get(indexLeaving).get(pivotIndex);
+        listOfBasisIndexes.set(indexLeaving, indexEntering);
+
+        for (int i = 0; i < listOfVariables.size(); i++) {
+            for (int j = 0; j < numberOfConstraints; j++) {
+                if (indexLeaving == j) {
+                    listOfConstraints.get(j)
+                            .set(i, listOfConstraints.get(j).get(i).divide(pivotValue, 4, RoundingMode.HALF_UP));
+                } else if (indexEntering == i)  //TUTAJ BLAD (NIBY OK JUZ)
+                    listOfConstraints.get(j).set(i, new BigDecimal("0.0"));
+                else if (indexEntering != i && j != indexLeaving) { // TU TEZ ( TU ZLE)
+                    System.out.println("aaa");
+                    listOfConstraints.get(j)
+                            .set(i, listOfConstraintsClone.get(j).get(i)
+                                    .subtract(
+                                            (listOfConstraintsClone.get(j).get(indexEntering).multiply(listOfConstraintsClone.get(indexLeaving).get(j)))
+                                                    .divide(pivotValue, 4, RoundingMode.HALF_UP))
+                            );
+                }
+
+            }
+            System.out.println("AFTER PIVOTING : " + listOfConstraints.get(indexLeaving).get(i));
+            writeData();
+        }
+        //setNewTableContinuation(pivotIndex, indexLeaving, indexEntering, pivotValue);
+        //writeData();
+    }
+
+//    private void setNewTableContinuation(int pivotIndex, int indexLeaving, int indexEntering, BigDecimal pivotValue) {
+//        for (int i = 0; i < listOfVariables.size(); i++) {
+//            for (int j = 0; j < numberOfConstraints; j++) {
+//
+//                if (indexEntering != i && j != indexLeaving) {
+//                    System.out.println("aaa");
+//                    listOfConstraints.get(j)
+//                            .set(i, listOfConstraints.get(j).get(i)
+//                                    .subtract(
+//                                            (listOfConstraints.get(j).get(indexEntering).multiply(listOfConstraints.get(indexLeaving).get(j)))
+//                                                    .divide(pivotValue, 4, RoundingMode.HALF_UP))
+//                            );
+//                }
+//            }
+//        }
+//        writeData();
+//    }
+
 }
+
+
+// TO DO : CLONE TABLE WITH VARIABLES
