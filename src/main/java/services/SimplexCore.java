@@ -1,13 +1,14 @@
 package services;
 
+import util.Configuration;
+
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import util.Configuration;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 public class SimplexCore {
 
@@ -20,8 +21,8 @@ public class SimplexCore {
     List<BigDecimal> listOfCoefficientsOfVariables;
     List<BigDecimal> listOfDifferenceVariablesAndCoefficients;
     List<BigDecimal> listOfBasicConstraintsDividedByXi;
-    ArrayList<List<BigDecimal>> listOfConstraintsClone = new ArrayList<>();
     boolean maximization;
+    BigDecimal decisionElement;
 
     public SimplexCore(List<BigDecimal> listOfVariables, List<List<BigDecimal>> listOfConstraints, boolean maximization, List<String> listOfConstraintsMark) {
         this.listOfVariables = listOfVariables;
@@ -29,25 +30,33 @@ public class SimplexCore {
         this.maximization = maximization;
         this.listOfConstraintsMark = listOfConstraintsMark;
         this.numberOfConstraints = listOfConstraints.size();
+
         extractRightSidesOfConstraints();
         normalize();
 
         listOfBasicConstraintsDividedByXi = new ArrayList<BigDecimal>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
         listOfCoefficientsOfVariables = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
         listOfDifferenceVariablesAndCoefficients = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
-
         writeData();
         printBasisIndexes();
+        try {
+            while (true) {
+                calculateCoeficcients();
+                calculateVariablesAndCoeffDifference();
+                if (checkStop())
+                    break;
+                calculateDecisionVector();
+                calculateRightSideOfConstraints(getIndexVariableEnteringBasis(), decisionElement);
+                setNewTable();
+                writeData();
+                prepareStep();
+                System.out.println("----------------------------------------");
+            }
+            printSolution();
+        } catch (NoSuchElementException nse) {
+            System.out.println("ZADANIE NIEOGRANICZONE");
+        }
 
-        calculateCoeficcients();
-        calculateVariablesAndCoeffDifference();
-
-        calculateDecisionVector();
-
-        System.out.println("LEAVING : " + getIndexVariableLeavingBasis());
-        System.out.println("ENTERGIN : " + getIndexVariableEnteringBasis());
-
-        setNewTable();
     }
 
     private void extractRightSidesOfConstraints() {
@@ -56,6 +65,24 @@ public class SimplexCore {
             listRightSideOfConstraints.add(listOfConstraints.get(i).get(element));
             listOfConstraints.get(i).remove(element);
             System.out.println("PRAWA STRONA OGRANICZENIA :" + i + " = " + listRightSideOfConstraints.get(i));
+        }
+    }
+
+    private void calculateRightSideOfConstraints(int enteringIndex, BigDecimal value) {
+        boolean permit = true;
+        for (int i = 0; i < listRightSideOfConstraints.size(); i++) {
+            try {
+                BigDecimal var = listRightSideOfConstraints.get(i).divide(listOfConstraints.get(i).get(enteringIndex), 4, RoundingMode.HALF_UP);
+                if (permit && var.compareTo(value) == 0) {
+                    permit = false;
+                    listRightSideOfConstraints.set(i, var);
+                } else
+                    listRightSideOfConstraints.set(i, listRightSideOfConstraints.get(i)
+                            .subtract((listOfConstraints.get(i).get(enteringIndex).multiply(value))));
+            } catch (ArithmeticException ae) {
+                System.out.println("LOG");
+            }
+
         }
     }
 
@@ -74,7 +101,6 @@ public class SimplexCore {
         listOfConstraintsMark.forEach(a -> System.out.println(a));
     }
 
-    /// TO DO jezeli MAX to -MAi jezeli MIN to +MAi
     private void normalize() {
         for (int i = 0; i < listOfConstraintsMark.size(); i++) {
             if (listOfConstraintsMark.get(i).equals(">=")) {
@@ -124,6 +150,12 @@ public class SimplexCore {
         listOfBasisIndexes.forEach(a -> System.out.println(a.doubleValue()));
     }
 
+    private void prepareStep() {
+        listOfBasicConstraintsDividedByXi = new ArrayList<BigDecimal>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
+        listOfDifferenceVariablesAndCoefficients = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
+        listOfCoefficientsOfVariables = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
+    }
+
     private void calculateCoeficcients() {
         System.out.println("Cj:");
 
@@ -156,7 +188,6 @@ public class SimplexCore {
             return getPivotElementMIN();
     }
 
-
     private int getPivotElementMAX() {
         System.out.println("MAX ELEMENT : " + Collections.max(listOfDifferenceVariablesAndCoefficients));
         return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.max(listOfDifferenceVariablesAndCoefficients));
@@ -168,16 +199,16 @@ public class SimplexCore {
     }
 
     private void calculateDecisionVector() {
+        listRightSideOfConstraints.forEach(a -> System.out.println(" WEKTOR B : " + a.doubleValue()));
         int index;
         if (maximization)
             index = getPivotElementMAX();
         else
             index = getPivotElementMIN();
 
-        int i = 0;
-        try {
-            for (i = 0; i < numberOfConstraints; i++) {
-
+        int i;
+        for (i = 0; i < numberOfConstraints; i++) {
+            try {
                 if (listOfConstraints.get(i).get(index).doubleValue() < 0)
                     listOfBasicConstraintsDividedByXi
                             .set(i, null);
@@ -185,16 +216,33 @@ public class SimplexCore {
                 listOfBasicConstraintsDividedByXi
                         .set(i, listRightSideOfConstraints.get(i)
                                 .divide(listOfConstraints.get(i).get(index), 4, RoundingMode.HALF_UP));
+
+
+                System.out.println("DECISION ELEMENT : " + decisionElement);
+            } catch (ArithmeticException ae) {
+                System.out.println("ADSDASDSADASD SAD AS DSA DSA DSA");
+                listOfBasicConstraintsDividedByXi.set(i, Configuration.M);
             }
-        } catch (ArithmeticException ae) {
-            listOfBasicConstraintsDividedByXi.set(i, Configuration.M);
+
         }
+
+        this.decisionElement = Collections.min(listOfBasicConstraintsDividedByXi
+                .stream()
+                .filter(a -> a.doubleValue() >= 0)
+                .collect(Collectors.toList()));
+
         listOfBasicConstraintsDividedByXi.forEach(a -> System.out.println("DECISION VECTOR : " + a));
+        listRightSideOfConstraints.forEach(a -> System.out.println(" WEKTOR B : " + a.doubleValue()));
     }
 
 
     private int getIndexVariableLeavingBasis() {
-        return listOfBasicConstraintsDividedByXi.indexOf(Collections.min(listOfBasicConstraintsDividedByXi));
+        return listOfBasicConstraintsDividedByXi
+                .indexOf(Collections.min(listOfBasicConstraintsDividedByXi
+                        .stream()
+                        .filter(a -> a.doubleValue() >= 0)
+                        .collect(Collectors.toList())));
+        //return listOfBasicConstraintsDividedByXi.indexOf(Collections.min(listOfBasicConstraintsDividedByXi));
     }
 
     private int getIndexVariableEnteringBasis() {
@@ -205,11 +253,24 @@ public class SimplexCore {
 
     }
 
+    private List<List<BigDecimal>> makeADeepCopyOfVariables(List<List<BigDecimal>> in) {
+        List<List<BigDecimal>> listOfConstraintsClone = new ArrayList<>();
+        for (int i = 0; i < listOfConstraints.size(); i++) {
+            listOfConstraintsClone.add(new ArrayList<BigDecimal>());
+            for (int j = 0; j < listOfConstraints.get(i).size(); j++)
+                listOfConstraintsClone.get(i).add(listOfConstraints.get(i).get(j));
+        }
+        return listOfConstraintsClone;
+    }
+
     private void setNewTable() {
-        listOfConstraintsClone = (ArrayList) listOfConstraints;
+        List<List<BigDecimal>> listOfConstraintsClone = makeADeepCopyOfVariables(listOfConstraints);
         int pivotIndex = getPivotIndex();
+        System.out.println("dsadsadsadsad : " + pivotIndex);
         int indexLeaving = getIndexVariableLeavingBasis();
+        System.out.println("INDEX LEAV : " + indexLeaving);
         int indexEntering = getIndexVariableEnteringBasis();
+        System.out.println("INDEX INTER : " + indexEntering);
         BigDecimal pivotValue = listOfConstraints.get(indexLeaving).get(pivotIndex);
         listOfBasisIndexes.set(indexLeaving, indexEntering);
 
@@ -218,45 +279,71 @@ public class SimplexCore {
                 if (indexLeaving == j) {
                     listOfConstraints.get(j)
                             .set(i, listOfConstraints.get(j).get(i).divide(pivotValue, 4, RoundingMode.HALF_UP));
-                } else if (indexEntering == i)  //TUTAJ BLAD (NIBY OK JUZ)
+                    continue;
+                } else if (indexEntering == i) {
                     listOfConstraints.get(j).set(i, new BigDecimal("0.0"));
-                else if (indexEntering != i && j != indexLeaving) { // TU TEZ ( TU ZLE)
-                    System.out.println("aaa");
+                    continue;
+
+                } else if (indexEntering != i && j != indexLeaving) {
+
+                    System.out.println("Dzialanie :" + listOfConstraints.get(j).get(i) + " - ("
+                            + listOfConstraintsClone.get(indexLeaving).get(i) + " * " + listOfConstraintsClone.get(j).get(indexEntering)
+                            + ") / " + pivotValue.doubleValue());
+
+
                     listOfConstraints.get(j)
-                            .set(i, listOfConstraintsClone.get(j).get(i)
+                            .set(i, listOfConstraints.get(j).get(i)
                                     .subtract(
-                                            (listOfConstraintsClone.get(j).get(indexEntering).multiply(listOfConstraintsClone.get(indexLeaving).get(j)))
+                                            (listOfConstraintsClone.get(indexLeaving).get(i).multiply(listOfConstraintsClone.get(j).get(indexEntering)))
                                                     .divide(pivotValue, 4, RoundingMode.HALF_UP))
                             );
                 }
-
             }
-            System.out.println("AFTER PIVOTING : " + listOfConstraints.get(indexLeaving).get(i));
-            writeData();
         }
-        //setNewTableContinuation(pivotIndex, indexLeaving, indexEntering, pivotValue);
-        //writeData();
     }
 
-//    private void setNewTableContinuation(int pivotIndex, int indexLeaving, int indexEntering, BigDecimal pivotValue) {
-//        for (int i = 0; i < listOfVariables.size(); i++) {
-//            for (int j = 0; j < numberOfConstraints; j++) {
-//
-//                if (indexEntering != i && j != indexLeaving) {
-//                    System.out.println("aaa");
-//                    listOfConstraints.get(j)
-//                            .set(i, listOfConstraints.get(j).get(i)
-//                                    .subtract(
-//                                            (listOfConstraints.get(j).get(indexEntering).multiply(listOfConstraints.get(indexLeaving).get(j)))
-//                                                    .divide(pivotValue, 4, RoundingMode.HALF_UP))
-//                            );
-//                }
-//            }
-//        }
-//        writeData();
-//    }
+    private boolean checkStop() {
+        if (maximization) {
+            if (listOfDifferenceVariablesAndCoefficients.stream().allMatch(a -> a.doubleValue() <= 0))
+                return true;
+            else
+                return false;
 
+        } else {
+            if (listOfDifferenceVariablesAndCoefficients.stream().allMatch(a -> a.doubleValue() >= 0))
+                return true;
+            else
+                return false;
+        }
+    }
+
+    private boolean checkIfArtificialVariableIsInBasis(List<BigDecimal> resultVectorList) {
+        for (int i = 0; i < resultVectorList.size(); i++)
+            if (resultVectorList.get(i).compareTo(new BigDecimal("0.0")) == 0
+                    &&
+                    listOfVariables.get(i).abs().compareTo(Configuration.M) == 0)
+                return false;
+        return true;
+    }
+
+    private void printSolution() {
+        System.out.println("VECTOR SOLUTION IS : " + listOfBasisIndexes);
+        List<BigDecimal> resultVectorList = new ArrayList<>(Collections.nCopies(listOfVariables.size(), new BigDecimal("0.0")));
+        for (int i = 0; i < listOfBasisIndexes.size(); i++) {
+            resultVectorList.set(listOfBasisIndexes.get(i),
+                    listRightSideOfConstraints.get(i));
+        }
+
+        //if (!checkIfArtificialVariableIsInBasis(resultVectorList)) {
+            System.out.println(resultVectorList);
+            BigDecimal optimalValue = new BigDecimal("0.0");
+            for (int i = 0; i < listOfVariables.size(); i++) {
+                optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i))));
+            }
+            System.out.println("FUNCTION VALUE IS : " + optimalValue);
+       // } else {
+       //     System.out.println("ZADANIE SPRZECZNE");
+       // }
+    }
 }
 
-
-// TO DO : CLONE TABLE WITH VARIABLES
