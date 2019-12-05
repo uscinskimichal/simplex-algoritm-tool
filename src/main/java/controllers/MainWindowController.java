@@ -127,12 +127,12 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @FXML
     void popAuthorWindow() throws IOException {
-        popNewWindow("/view/AuthorWindowView.fxml", "Autor" , 300, 300);
+        popNewWindow("/view/AuthorWindowView.fxml", "Autor", 300, 300);
     }
 
     @FXML
     void popAboutWindow() throws IOException {
-        popNewWindow("/view/AboutWindowView.fxml", "O programie" , 300, 300);
+        popNewWindow("/view/AboutWindowView.fxml", "O programie", 300, 300);
     }
 
     @FXML
@@ -151,7 +151,7 @@ public class MainWindowController extends Navigate implements Initializable {
             maximization = false;
 
         try {
-            new SimplexCore(
+            SimplexCore simplexCore = new SimplexCore(
                     variablesTextFieldList
                             .stream()
                             .map(a -> {
@@ -181,6 +181,7 @@ public class MainWindowController extends Navigate implements Initializable {
                             .collect(Collectors.toList()
                             ));
 
+            simplexCore.solve();
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
         }
@@ -332,7 +333,6 @@ public class MainWindowController extends Navigate implements Initializable {
         constraintMarkComboBoxList.get(2).getSelectionModel().select(2);
         constraintMarkComboBoxList.get(3).getSelectionModel().select(0);
         constraintMarkComboBoxList.get(4).getSelectionModel().select(1);
-
 
 
     }

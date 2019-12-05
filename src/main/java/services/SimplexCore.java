@@ -3,6 +3,7 @@ package services;
 import exceptions.InfitnitySolutions;
 import util.Configuration;
 
+import java.io.Console;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -20,16 +21,16 @@ public class SimplexCore {
 
     private final int numberOfConstraints;
     private int iterationNumber = 0;
-    List<BigDecimal> listOfVariables;
-    List<List<BigDecimal>> listOfConstraints;
-    List<String> listOfConstraintsMark;
-    List<BigDecimal> listRightSideOfConstraints = new ArrayList<>();
-    List<Integer> listOfBasisIndexes = new ArrayList<>();
-    List<BigDecimal> listOfCoefficientsOfVariables;
-    List<BigDecimal> listOfDifferenceVariablesAndCoefficients;
-    List<BigDecimal> listOfBasicConstraintsDividedByXi;
+    private List<BigDecimal> listOfVariables;
+    private List<List<BigDecimal>> listOfConstraints;
+    private List<String> listOfConstraintsMark;
+    private List<BigDecimal> listRightSideOfConstraints = new ArrayList<>();
+    private List<Integer> listOfBasisIndexes = new ArrayList<>();
+    private List<BigDecimal> listOfCoefficientsOfVariables;
+    private List<BigDecimal> listOfDifferenceVariablesAndCoefficients;
+    private List<BigDecimal> listOfBasicConstraintsDividedByXi;
     boolean maximization;
-    BigDecimal decisionElement;
+    private BigDecimal decisionElement;
 
     public SimplexCore(List<BigDecimal> listOfVariables, List<List<BigDecimal>> listOfConstraints, boolean maximization, List<String> listOfConstraintsMark) {
         this.listOfVariables = listOfVariables;
@@ -37,7 +38,10 @@ public class SimplexCore {
         this.maximization = maximization;
         this.listOfConstraintsMark = listOfConstraintsMark;
         this.numberOfConstraints = listOfConstraints.size();
+    }
 
+    public void solve() {
+//        PrintStream stdout = System.out;
 //        try {
 //            PrintStream out = new PrintStream(new FileOutputStream("SIMPLEX_LOG_" + getDateAndTime() + ".txt"));
 //            System.setOut(out);
@@ -49,11 +53,10 @@ public class SimplexCore {
         fixNegativeConstraint();
         normalize();
 
-        listOfBasicConstraintsDividedByXi = new ArrayList<BigDecimal>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
-        listOfCoefficientsOfVariables = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
-        listOfDifferenceVariablesAndCoefficients = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
+        listOfBasicConstraintsDividedByXi = new ArrayList<>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
+        listOfCoefficientsOfVariables = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
+        listOfDifferenceVariablesAndCoefficients = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
         writeData();
-        printBasisIndexes();
         try {
             while (true) {
                 calculateCoeficcients();
@@ -68,10 +71,10 @@ public class SimplexCore {
                 System.out.println("----------------------------------------");
             }
             printSolution();
+//            System.setOut(stdout);
         } catch (InfitnitySolutions nse) {
             System.out.println("Zadanie nieograniczone - nie jest możliwe ustalenie rozwiązania optymalnego.");
         }
-
     }
 
     private void extractRightSidesOfConstraints() {
@@ -111,6 +114,8 @@ public class SimplexCore {
         System.out.println("\nOgraniczenia : ");
         for (int i = 0; i < listOfConstraints.size(); i++)
             System.out.println(listOfConstraints.get(i) + " " + listOfConstraintsMark.get(i) + " " + listRightSideOfConstraints.get(i));
+        System.out.println("\nIndeksy bazy:");
+        System.out.println(listOfBasisIndexes);
     }
 
     private void fixNegativeConstraint() {
@@ -133,8 +138,8 @@ public class SimplexCore {
             if (listOfConstraintsMark.get(i).equals(">=")) {
                 for (int j = 0; j < listOfConstraints.size(); j++) {
                     if (i == j) {
-                        listOfConstraints.get(j).add(new BigDecimal("-1.0")); // sub Si
-                        listOfConstraints.get(j).add(new BigDecimal("1.0")); // add Ai
+                        listOfConstraints.get(j).add(new BigDecimal("-1.0"));
+                        listOfConstraints.get(j).add(new BigDecimal("1.0"));
                         listOfBasisIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfVariables.add(new BigDecimal("0.0"));
                         if (maximization)
@@ -172,15 +177,10 @@ public class SimplexCore {
         }
     }
 
-    private void printBasisIndexes() {
-        System.out.println("\nIndeksy bazy:");
-        System.out.println(listOfBasisIndexes);
-    }
-
     private void prepareStep() {
-        listOfBasicConstraintsDividedByXi = new ArrayList<BigDecimal>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
-        listOfDifferenceVariablesAndCoefficients = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
-        listOfCoefficientsOfVariables = new ArrayList<BigDecimal>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
+        listOfBasicConstraintsDividedByXi = new ArrayList<>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
+        listOfDifferenceVariablesAndCoefficients = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
+        listOfCoefficientsOfVariables = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
     }
 
     private void calculateCoeficcients() {
@@ -218,7 +218,6 @@ public class SimplexCore {
     }
 
     private int getPivotElementMIN() {
-        System.out.println("Element minimalny z Zj : " + Collections.min(listOfDifferenceVariablesAndCoefficients));
         return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.min(listOfDifferenceVariablesAndCoefficients));
     }
 
@@ -237,12 +236,10 @@ public class SimplexCore {
         for (i = 0; i < numberOfConstraints; i++) {
             try {
                 if (listOfConstraints.get(i).get(index).doubleValue() < 0)
-                    listOfBasicConstraintsDividedByXi
-                            .set(i, null);
+                    listOfBasicConstraintsDividedByXi.set(i, null);
 
-                listOfBasicConstraintsDividedByXi
-                        .set(i, listRightSideOfConstraints.get(i)
-                                .divide(listOfConstraints.get(i).get(index), 4, RoundingMode.HALF_UP));
+                listOfBasicConstraintsDividedByXi.set(i, listRightSideOfConstraints.get(i)
+                        .divide(listOfConstraints.get(i).get(index), 4, RoundingMode.HALF_UP));
 
 
             } catch (ArithmeticException ae) {
@@ -264,34 +261,26 @@ public class SimplexCore {
         System.out.println("Element decyzyjny : " + decisionElement);
     }
 
-
     private int getIndexVariableLeavingBasis() {
-        // System.out.println("WWWWWWWWWWWWWW : " + listOfBasicConstraintsDividedByXi);
-        //  System.out.println("WWWWWWWWWW: " + listOfBasicConstraintsDividedByXi
-        //        .indexOf(Collections.min(listOfBasicConstraintsDividedByXi
-        //                .stream()
-        //                .filter(a -> a.doubleValue() >= 0)
-        //                .collect(Collectors.toList()))));
         return listOfBasicConstraintsDividedByXi
                 .indexOf(Collections.min(listOfBasicConstraintsDividedByXi
                         .stream()
                         .filter(a -> a.doubleValue() >= 0)
                         .collect(Collectors.toList())));
-        //return listOfBasicConstraintsDividedByXi.indexOf(Collections.min(listOfBasicConstraintsDividedByXi));
     }
 
     private int getIndexVariableEnteringBasis() {
         if (maximization)
-            return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.max(listOfDifferenceVariablesAndCoefficients)); //MAX
+            return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.max(listOfDifferenceVariablesAndCoefficients));
         else
-            return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.min(listOfDifferenceVariablesAndCoefficients)); //MIN
+            return listOfDifferenceVariablesAndCoefficients.indexOf(Collections.min(listOfDifferenceVariablesAndCoefficients));
 
     }
 
-    private List<List<BigDecimal>> makeADeepCopyOfVariables(List<List<BigDecimal>> in) {
+    private List<List<BigDecimal>> makeADeepCopyOfVariables() {
         List<List<BigDecimal>> listOfConstraintsClone = new ArrayList<>();
         for (int i = 0; i < listOfConstraints.size(); i++) {
-            listOfConstraintsClone.add(new ArrayList<BigDecimal>());
+            listOfConstraintsClone.add(new ArrayList<>());
             for (int j = 0; j < listOfConstraints.get(i).size(); j++)
                 listOfConstraintsClone.get(i).add(listOfConstraints.get(i).get(j));
         }
@@ -299,11 +288,10 @@ public class SimplexCore {
     }
 
     private void setNewTable() {
-        List<List<BigDecimal>> listOfConstraintsClone = makeADeepCopyOfVariables(listOfConstraints);
+        List<List<BigDecimal>> listOfConstraintsClone = makeADeepCopyOfVariables();
         int pivotIndex = getPivotIndex();
-        //System.out.println("dsadsadsadsad : " + pivotIndex);
         int indexLeaving = getIndexVariableLeavingBasis();
-        System.out.println("\nIndeks wychodzący z bazy : " + indexLeaving);
+        System.out.println("\nElement wychodzący z bazy : " + listOfBasisIndexes.get(indexLeaving));
         int indexEntering = getIndexVariableEnteringBasis();
         System.out.println("Indeks wchodzący do bazy : " + indexEntering);
         System.out.println(" ");
@@ -349,11 +337,11 @@ public class SimplexCore {
     }
 
     private boolean checkStop() {
-        if (maximization) {
+        if (maximization)
             return listOfDifferenceVariablesAndCoefficients.stream().allMatch(a -> a.doubleValue() <= 0);
-        } else {
+        else
             return listOfDifferenceVariablesAndCoefficients.stream().allMatch(a -> a.doubleValue() >= 0);
-        }
+
     }
 
     private boolean checkIfMIsInSolution(List<BigDecimal> resultVectorList) {
@@ -367,24 +355,18 @@ public class SimplexCore {
         return false;
     }
 
-//    private boolean checkIfProblemIsUnsolveable(BigDecimal optimalValue) {
-//        if (optimalValue.doubleValue() >= 0) {
-//            return false;
-//        } else
-//            return true;
-//    }
-
     private void printSolution() {
         List<BigDecimal> resultVectorList = new ArrayList<>(Collections.nCopies(listOfVariables.size(), new BigDecimal("0.0")));
         for (int i = 0; i < listOfBasisIndexes.size(); i++) {
             resultVectorList.set(listOfBasisIndexes.get(i),
                     listRightSideOfConstraints.get(i));
         }
-        BigDecimal optimalValue = new BigDecimal("0.0");
-        for (int i = 0; i < listOfVariables.size(); i++)
-            optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i))));
 
         if (!checkIfMIsInSolution(resultVectorList)) {
+            BigDecimal optimalValue = new BigDecimal("0.0");
+            for (int i = 0; i < listOfVariables.size(); i++)
+                optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i))));
+
             System.out.println("\nWektor bazowy rozwiązania : " + listOfBasisIndexes);
             System.out.println("Wektor rozwiązania zadania optymalnego : " + resultVectorList);
             System.out.println("Wartość funkcji : " + optimalValue); // TO DO new OptimalSolution
@@ -406,12 +388,10 @@ public class SimplexCore {
         }
     }
 
-
     private String getDateAndTime() {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
         LocalDateTime now = LocalDateTime.now();
-        System.out.println(dtf.format(now));
-        return dtf.format(now);
+        return dateTimeFormatter.format(now);
     }
 }
 
