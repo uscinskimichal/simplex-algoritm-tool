@@ -305,7 +305,7 @@ public class SimplexCore {
                 for (int j = 0; j < numberOfConstraints; j++) {
                     if (indexLeaving == j) {
                         BigDecimal pivotResult = new BigDecimal("" + listOfConstraints.get(j).get(i).divide(pivotValue, 4, RoundingMode.HALF_UP));
-                        System.out.println("Przygotowanie tabeli simplex [" + i + "][" + j + "] : " + pivotResult);
+                        System.out.println("Przygotowanie tabeli simplex [" + i + "][" + j + "] : " + listOfConstraints.get(j).get(i) + " / " + pivotValue + " = " + pivotResult);
                         listOfConstraints.get(j).set(i, pivotResult);
                         continue;
                     } else if (indexEntering == i) {
