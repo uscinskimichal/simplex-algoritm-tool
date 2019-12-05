@@ -98,8 +98,6 @@ public class MainWindowController extends Navigate implements Initializable {
             variablesTextFieldList.add(addTextField(20 + 80 * variables, 40, Pos.CENTER_RIGHT, variablesPane));
 
         }
-
-        //changeScene(borderPane, "TestWindowView.fxml");
     }
 
     private void generateConstraints() {
@@ -137,7 +135,6 @@ public class MainWindowController extends Navigate implements Initializable {
         popNewWindow("/view/AboutWindowView.fxml", "O programie" , 300, 300);
     }
 
-
     @FXML
     void generate() {
         eraseData();
@@ -146,7 +143,7 @@ public class MainWindowController extends Navigate implements Initializable {
     }
 
     @FXML
-    void solve() throws IOException {
+    void solve() {
         boolean maximization;
         if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
             maximization = true;
@@ -154,7 +151,7 @@ public class MainWindowController extends Navigate implements Initializable {
             maximization = false;
 
         try {
-            SimplexCore simplexCore = new SimplexCore(
+            new SimplexCore(
                     variablesTextFieldList
                             .stream()
                             .map(a -> {
@@ -187,10 +184,6 @@ public class MainWindowController extends Navigate implements Initializable {
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
         }
-
-
-
-
     }
 
     @FXML
@@ -287,14 +280,93 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @FXML
     void fourthExample(ActionEvent event) {
-        System.out.println("TO DO EXAMPLE");
+        numberOfVariablesComboBox.getSelectionModel().select(4);
+        numberOfConstraintsComboBox.getSelectionModel().select(4);
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
+
+        generate();
+
+        variablesTextFieldList.get(0).setText("1.5");
+        variablesTextFieldList.get(1).setText("3");
+        variablesTextFieldList.get(2).setText("-4");
+        variablesTextFieldList.get(3).setText("2.2");
+        variablesTextFieldList.get(4).setText("6");
+
+        listConstraintsTextFieldList.get(0).get(0).setText("-4");
+        listConstraintsTextFieldList.get(0).get(1).setText("2.2");
+        listConstraintsTextFieldList.get(0).get(2).setText("5");
+        listConstraintsTextFieldList.get(0).get(3).setText("0");
+        listConstraintsTextFieldList.get(0).get(4).setText("4");
+        listConstraintsTextFieldList.get(0).get(5).setText("50");
+
+        listConstraintsTextFieldList.get(1).get(0).setText("0");
+        listConstraintsTextFieldList.get(1).get(1).setText("5.7");
+        listConstraintsTextFieldList.get(1).get(2).setText("-2.1");
+        listConstraintsTextFieldList.get(1).get(3).setText("4");
+        listConstraintsTextFieldList.get(1).get(4).setText("2");
+        listConstraintsTextFieldList.get(1).get(5).setText("41");
+
+        listConstraintsTextFieldList.get(2).get(0).setText("4");
+        listConstraintsTextFieldList.get(2).get(1).setText("3");
+        listConstraintsTextFieldList.get(2).get(2).setText("5");
+        listConstraintsTextFieldList.get(2).get(3).setText("2");
+        listConstraintsTextFieldList.get(2).get(4).setText("1");
+        listConstraintsTextFieldList.get(2).get(5).setText("100");
+
+        listConstraintsTextFieldList.get(3).get(0).setText("4");
+        listConstraintsTextFieldList.get(3).get(1).setText("0");
+        listConstraintsTextFieldList.get(3).get(2).setText("-3.2");
+        listConstraintsTextFieldList.get(3).get(3).setText("4.4");
+        listConstraintsTextFieldList.get(3).get(4).setText("5");
+        listConstraintsTextFieldList.get(3).get(5).setText("-6");
+
+        listConstraintsTextFieldList.get(4).get(0).setText("4");
+        listConstraintsTextFieldList.get(4).get(1).setText("2");
+        listConstraintsTextFieldList.get(4).get(2).setText("5.5");
+        listConstraintsTextFieldList.get(4).get(3).setText("-3.7");
+        listConstraintsTextFieldList.get(4).get(4).setText("1");
+        listConstraintsTextFieldList.get(4).get(5).setText("4");
+
+        constraintMarkComboBoxList.get(0).getSelectionModel().select(0);
+        constraintMarkComboBoxList.get(1).getSelectionModel().select(1);
+        constraintMarkComboBoxList.get(2).getSelectionModel().select(2);
+        constraintMarkComboBoxList.get(3).getSelectionModel().select(0);
+        constraintMarkComboBoxList.get(4).getSelectionModel().select(1);
+
+
+
     }
 
     @FXML
     void fifthExample(ActionEvent event) {
-        System.out.println("TO DO EXAMPLE");
-    }
+        numberOfVariablesComboBox.getSelectionModel().select(3);
+        numberOfConstraintsComboBox.getSelectionModel().select(1);
+        comboBoxFunctionCriteria.getSelectionModel().select(0);
 
+        generate();
+
+        variablesTextFieldList.get(0).setText("4.2");
+        variablesTextFieldList.get(1).setText("-6.6");
+        variablesTextFieldList.get(2).setText("4");
+        variablesTextFieldList.get(3).setText("32");
+
+        listConstraintsTextFieldList.get(0).get(0).setText("-0.6");
+        listConstraintsTextFieldList.get(0).get(1).setText("2");
+        listConstraintsTextFieldList.get(0).get(2).setText("0.5");
+        listConstraintsTextFieldList.get(0).get(3).setText("4");
+        listConstraintsTextFieldList.get(0).get(4).setText("152");
+
+        listConstraintsTextFieldList.get(1).get(0).setText("14");
+        listConstraintsTextFieldList.get(1).get(1).setText("0");
+        listConstraintsTextFieldList.get(1).get(2).setText("12.2");
+        listConstraintsTextFieldList.get(1).get(3).setText("-3");
+        listConstraintsTextFieldList.get(1).get(4).setText("-4");
+
+        constraintMarkComboBoxList.get(0).getSelectionModel().select(0);
+        constraintMarkComboBoxList.get(1).getSelectionModel().select(0);
+
+
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
