@@ -4,10 +4,7 @@ import util.Configuration;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SimplexCore {
@@ -237,6 +234,12 @@ public class SimplexCore {
 
 
     private int getIndexVariableLeavingBasis() {
+        System.out.println("PEEEEPOSSS : " + listOfBasicConstraintsDividedByXi);
+        System.out.println("PEEEEPO : " + listOfBasicConstraintsDividedByXi
+                .indexOf(Collections.min(listOfBasicConstraintsDividedByXi
+                        .stream()
+                        .filter(a -> a.doubleValue() >= 0)
+                        .collect(Collectors.toList()))));
         return listOfBasicConstraintsDividedByXi
                 .indexOf(Collections.min(listOfBasicConstraintsDividedByXi
                         .stream()
@@ -271,6 +274,8 @@ public class SimplexCore {
         System.out.println("INDEX LEAV : " + indexLeaving);
         int indexEntering = getIndexVariableEnteringBasis();
         System.out.println("INDEX INTER : " + indexEntering);
+        if (listOfConstraints.get(indexLeaving).get(pivotIndex).doubleValue() < 0)
+            throw new NoSuchElementException();
         BigDecimal pivotValue = listOfConstraints.get(indexLeaving).get(pivotIndex);
         listOfBasisIndexes.set(indexLeaving, indexEntering);
 
@@ -317,13 +322,11 @@ public class SimplexCore {
         }
     }
 
-    private boolean checkIfArtificialVariableIsInBasis(List<BigDecimal> resultVectorList) {
-        for (int i = 0; i < resultVectorList.size(); i++)
-            if (resultVectorList.get(i).compareTo(new BigDecimal("0.0")) == 0
-                    &&
-                    listOfVariables.get(i).abs().compareTo(Configuration.M) == 0)
-                return false;
-        return true;
+    private boolean checkIfProblemIsUnsolveable(BigDecimal optimalValue) {
+        if (optimalValue.doubleValue() >= 0)
+            return false;
+        else
+            return true;
     }
 
     private void printSolution() {
@@ -334,16 +337,16 @@ public class SimplexCore {
                     listRightSideOfConstraints.get(i));
         }
 
-        //if (!checkIfArtificialVariableIsInBasis(resultVectorList)) {
-            System.out.println(resultVectorList);
-            BigDecimal optimalValue = new BigDecimal("0.0");
-            for (int i = 0; i < listOfVariables.size(); i++) {
-                optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i))));
-            }
+        System.out.println(resultVectorList);
+        BigDecimal optimalValue = new BigDecimal("0.0");
+        for (int i = 0; i < listOfVariables.size(); i++)
+            optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i))));
+
+        if (!checkIfProblemIsUnsolveable(optimalValue)) {
             System.out.println("FUNCTION VALUE IS : " + optimalValue);
-       // } else {
-       //     System.out.println("ZADANIE SPRZECZNE");
-       // }
+        } else {
+            System.out.println("ZADANIE SPRZECZNE");
+        }
     }
 }
 
