@@ -300,10 +300,13 @@ public class SimplexCore {
         int indexEntering = getIndexVariableEnteringBasis();
         System.out.println("Indeks wchodzący do bazy : " + indexEntering);
         System.out.println(" ");
-        if (listOfConstraints.get(indexLeaving).get(pivotIndex).doubleValue() < 0)
+        BigDecimal pivotValue = new BigDecimal("" + listOfConstraints.get(indexLeaving).get(pivotIndex));
+        if (pivotValue.doubleValue() < 0) {
+            System.out.println("Element leżący na przekątnej nowej bazy : " + pivotValue);
+            System.out.println(" ");
             throw new InfitnitySolutions();
+        }
         try {
-            BigDecimal pivotValue = listOfConstraints.get(indexLeaving).get(pivotIndex);
             System.out.println("Element leżący na przekątnej nowej bazy : " + pivotValue);
             System.out.println(" ");
             listOfBasisIndexes.set(indexLeaving, indexEntering);
@@ -353,7 +356,7 @@ public class SimplexCore {
     private boolean checkIfMIsInSolution(List<BigDecimal> resultVectorList) {
         for (int i = 0; i < listOfBasisIndexes.size(); i++) {
             System.out.println("Wartość X(" + (listOfBasisIndexes.get(i) + 1) + ") wynosi : " + listOfVariables.get(listOfBasisIndexes.get(i))
-                    .multiply(resultVectorList.get(listOfBasisIndexes.get(i)),mathContext).abs());
+                    .multiply(resultVectorList.get(listOfBasisIndexes.get(i)), mathContext).abs());
             if (resultVectorList.get(listOfBasisIndexes.get(i)).doubleValue() != 0 &&
                     listOfVariables.get(listOfBasisIndexes.get(i)).abs().compareTo(Configuration.M) == 0)
                 return true;
@@ -371,7 +374,7 @@ public class SimplexCore {
         if (!checkIfMIsInSolution(resultVectorList)) {
             BigDecimal optimalValue = new BigDecimal("0.0");
             for (int i = 0; i < listOfVariables.size(); i++)
-                optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i),mathContext)));
+                optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i), mathContext)));
 
             System.out.println("\nWektor bazowy rozwiązania : " + listOfBasisIndexes);
             System.out.println("Wektor rozwiązania zadania optymalnego : " + resultVectorList);
