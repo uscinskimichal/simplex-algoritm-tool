@@ -17,6 +17,7 @@ public class Configuration {
         return this.HEIGHT;
     }
 
-
-
+    public static void setM(BigDecimal m) {
+        M = m;
+    }
 }

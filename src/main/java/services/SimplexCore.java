@@ -43,14 +43,6 @@ public class SimplexCore extends Navigate {
     }
 
     public void solve() {
-//        PrintStream stdout = System.out;
-//        try {
-//            PrintStream out = new PrintStream(new FileOutputStream("SIMPLEX_LOG_" + getDateAndTime() + ".txt"));
-//            System.setOut(out);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
         extractRightSidesOfConstraints();
         fixNegativeConstraint();
         normalize();
@@ -398,11 +390,7 @@ public class SimplexCore extends Navigate {
         }
     }
 
-    private String getDateAndTime() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss_SSS");
-        LocalDateTime now = LocalDateTime.now();
-        return dateTimeFormatter.format(now);
-    }
+
 
     public String returnStringSolution(){
         String result = "Wektor rozwiązania zadania optymalnego : " + resultVectorList + "\nWartość funkcji : " + optimalValue;

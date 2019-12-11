@@ -6,20 +6,24 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import services.SimplexCore;
+import util.Configuration;
 import util.Navigate;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -27,13 +31,26 @@ import java.util.stream.Collectors;
 
 public class MainWindowController extends Navigate implements Initializable {
 
+    PrintStream stdout = System.out;
     List<TextField> variablesTextFieldList = new ArrayList<>();
     List<List<TextField>> listConstraintsTextFieldList = new ArrayList<>();
     List<ComboBox<String>> constraintMarkComboBoxList = new ArrayList<>();
+    List<CheckMenuItem> mConfigurationMenuItems = new ArrayList<>();
 
+    @FXML
+    private CheckMenuItem setMfirst, setMsecond, setMthird, setMfourth, setMfifth, enableConsoleLogMenuItem, enableFileLogMenuItem;
+
+    @FXML
+    private CustomMenuItem setMValueMenuItem;
+
+    @FXML
+    private SplitMenuButton setMValueListMenu;
 
     @FXML
     private AnchorPane anchorPane;
+
+    @FXML
+    private Menu settings;
 
     @FXML
     private Button solveButton;
@@ -372,6 +389,9 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        mConfigurationMenuItems = Arrays.asList(setMfirst, setMsecond, setMthird, setMfourth, setMfifth);
+        setMValueMenuItem.setHideOnClick(true);
+
         numberOfVariablesComboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5));
         numberOfConstraintsComboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9));
         comboBoxFunctionCriteria.setItems(FXCollections.observableArrayList("Max", "Min"));
@@ -380,5 +400,90 @@ public class MainWindowController extends Navigate implements Initializable {
 
         comboBoxFunctionCriteria.getSelectionModel().select(0);
         generate();
+    }
+
+    @FXML
+    void setMfirst(ActionEvent event) {
+        if (setMfirst.isSelected()) {
+            mConfigurationMenuItems.forEach(a -> a.setSelected(false));
+            setMfirst.setSelected(true);
+            Configuration.setM(new BigDecimal("1000"));
+        }
+    }
+
+    @FXML
+    void setMsecond(ActionEvent event) {
+        if (setMsecond.isSelected()) {
+            mConfigurationMenuItems.forEach(a -> a.setSelected(false));
+            setMsecond.setSelected(true);
+            Configuration.setM(new BigDecimal("10000"));
+        }
+    }
+
+    @FXML
+    void setMthird(ActionEvent event) {
+        if (setMthird.isSelected()) {
+            mConfigurationMenuItems.forEach(a -> a.setSelected(false));
+            setMthird.setSelected(true);
+            Configuration.setM(new BigDecimal("100000"));
+        }
+    }
+
+    @FXML
+    void setMfourth(ActionEvent event) {
+        if (setMfourth.isSelected()) {
+            mConfigurationMenuItems.forEach(a -> a.setSelected(false));
+            setMfourth.setSelected(true);
+            Configuration.setM(new BigDecimal("1000000"));
+        }
+    }
+
+    @FXML
+    void setMfifth(ActionEvent event) {
+        if (setMfifth.isSelected()) {
+            mConfigurationMenuItems.forEach(a -> a.setSelected(false));
+            setMfifth.setSelected(true);
+            Configuration.setM(new BigDecimal("10000000"));
+        }
+    }
+
+    @FXML
+    void enableConsole(ActionEvent event) {
+        if (enableConsoleLogMenuItem.isSelected() && System.out != stdout) {
+            enableConsoleLogging();
+            System.out.println("Logowanie na konsolę.");
+            enableConsoleLogMenuItem.setSelected(true);
+            enableFileLogMenuItem.setSelected(false);
+        }
+    }
+
+    @FXML
+    void enableFile(ActionEvent event) {
+        if (enableFileLogMenuItem.isSelected() && System.out == stdout) {
+            System.out.println("Logowanie do pliku.");
+            enableConsoleLogMenuItem.setSelected(false);
+            enableFileLogMenuItem.setSelected(true);
+            enableFileLogging();
+        }
+    }
+
+    private void enableFileLogging() {
+        try {
+            FileOutputStream fs = new FileOutputStream("SIMPLEX_LOG_" + getDateAndTime() + ".txt");
+            PrintStream out = new PrintStream(fs);
+            System.setOut(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void enableConsoleLogging() {
+        System.setOut(stdout);
+    }
+
+    private String getDateAndTime() {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss_SSS");
+        LocalDateTime now = LocalDateTime.now();
+        return dateTimeFormatter.format(now);
     }
 }
