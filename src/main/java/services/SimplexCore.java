@@ -1,12 +1,10 @@
 package services;
 
+import controllers.ResultWindowController;
 import exceptions.InfitnitySolutions;
 import util.Configuration;
+import util.Navigate;
 
-import java.io.Console;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -18,9 +16,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-public class SimplexCore {
+public class SimplexCore extends Navigate {
 
-    MathContext mathContext = new MathContext(6, RoundingMode.HALF_EVEN);
+    MathContext mathContext = new MathContext(4, RoundingMode.HALF_EVEN);
     private final int numberOfConstraints;
     private int iterationNumber = 0;
     private List<BigDecimal> listOfVariables;
@@ -31,6 +29,8 @@ public class SimplexCore {
     private List<BigDecimal> listOfCoefficientsOfVariables;
     private List<BigDecimal> listOfDifferenceVariablesAndCoefficients;
     private List<BigDecimal> listOfBasicConstraintsDividedByXi;
+    private List<BigDecimal> resultVectorList ;
+    private BigDecimal optimalValue;
     boolean maximization;
     private BigDecimal decisionElement;
 
@@ -55,6 +55,7 @@ public class SimplexCore {
         fixNegativeConstraint();
         normalize();
 
+        resultVectorList = new ArrayList<>(Collections.nCopies(listOfVariables.size(), new BigDecimal("0.0")));
         listOfBasicConstraintsDividedByXi = new ArrayList<>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
         listOfCoefficientsOfVariables = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
         listOfDifferenceVariablesAndCoefficients = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
@@ -365,14 +366,14 @@ public class SimplexCore {
     }
 
     private void printSolution() {
-        List<BigDecimal> resultVectorList = new ArrayList<>(Collections.nCopies(listOfVariables.size(), new BigDecimal("0.0")));
+
         for (int i = 0; i < listOfBasisIndexes.size(); i++) {
             resultVectorList.set(listOfBasisIndexes.get(i),
                     listRightSideOfConstraints.get(i));
         }
 
         if (!checkIfMIsInSolution(resultVectorList)) {
-            BigDecimal optimalValue = new BigDecimal("0.0");
+            optimalValue = new BigDecimal("0.0");
             for (int i = 0; i < listOfVariables.size(); i++)
                 optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i), mathContext)));
 
@@ -398,9 +399,14 @@ public class SimplexCore {
     }
 
     private String getDateAndTime() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss_SSS");
         LocalDateTime now = LocalDateTime.now();
         return dateTimeFormatter.format(now);
+    }
+
+    public String returnStringSolution(){
+        String result = "Wektor rozwiązania zadania optymalnego : " + resultVectorList + "\nWartość funkcji : " + optimalValue;
+        return result;
     }
 }
 

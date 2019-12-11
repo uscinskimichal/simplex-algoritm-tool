@@ -143,7 +143,7 @@ public class MainWindowController extends Navigate implements Initializable {
     }
 
     @FXML
-    void solve() {
+    void solve() throws IOException {
         boolean maximization;
         if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
             maximization = true;
@@ -180,8 +180,10 @@ public class MainWindowController extends Navigate implements Initializable {
                             .map(a -> a.getSelectionModel().getSelectedItem())
                             .collect(Collectors.toList()
                             ));
-
+            //ResultWindowController controller = (ResultWindowController) popNewWindowWithParameter("/view/ResultWindowView.fxml", "Wynik", 550, 400);
+            //controller.setSimplexCore(simplexCore);
             simplexCore.solve();
+
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
         }
