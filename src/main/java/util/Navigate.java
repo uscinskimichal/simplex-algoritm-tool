@@ -39,4 +39,18 @@ public abstract class Navigate {
         return stage;
     }
 
+    public Object popNewWindowWithParameter(String pathToFXML, String title, int width, int height) throws IOException {
+        Stage stage = new Stage();
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(pathToFXML));
+        Parent root = (Parent) fxmlLoader.load();
+        Object controller = fxmlLoader.<Object>getController();
+        stage.setTitle(title);
+        stage.setScene(new Scene(root, width, height));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
+
+        return controller;
+    }
+
 }

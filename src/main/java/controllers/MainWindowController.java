@@ -127,12 +127,12 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @FXML
     void popAuthorWindow() throws IOException {
-        popNewWindow("/view/AuthorWindowView.fxml", "Autor" , 300, 300);
+        popNewWindow("/view/AuthorWindowView.fxml", "Autor", 300, 300);
     }
 
     @FXML
     void popAboutWindow() throws IOException {
-        popNewWindow("/view/AboutWindowView.fxml", "O programie" , 300, 300);
+        popNewWindow("/view/AboutWindowView.fxml", "O programie", 300, 300);
     }
 
     @FXML
@@ -143,7 +143,7 @@ public class MainWindowController extends Navigate implements Initializable {
     }
 
     @FXML
-    void solve() {
+    void solve() throws IOException {
         boolean maximization;
         if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
             maximization = true;
@@ -151,7 +151,7 @@ public class MainWindowController extends Navigate implements Initializable {
             maximization = false;
 
         try {
-            new SimplexCore(
+            SimplexCore simplexCore = new SimplexCore(
                     variablesTextFieldList
                             .stream()
                             .map(a -> {
@@ -180,6 +180,9 @@ public class MainWindowController extends Navigate implements Initializable {
                             .map(a -> a.getSelectionModel().getSelectedItem())
                             .collect(Collectors.toList()
                             ));
+            //ResultWindowController controller = (ResultWindowController) popNewWindowWithParameter("/view/ResultWindowView.fxml", "Wynik", 550, 400);
+            //controller.setSimplexCore(simplexCore);
+            simplexCore.solve();
 
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
@@ -332,7 +335,6 @@ public class MainWindowController extends Navigate implements Initializable {
         constraintMarkComboBoxList.get(2).getSelectionModel().select(2);
         constraintMarkComboBoxList.get(3).getSelectionModel().select(0);
         constraintMarkComboBoxList.get(4).getSelectionModel().select(1);
-
 
 
     }
