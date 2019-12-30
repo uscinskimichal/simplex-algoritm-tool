@@ -149,7 +149,7 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @FXML
     void popAboutWindow() throws IOException {
-        popNewWindow("/view/AboutWindowView.fxml", "O programie", 300, 300);
+        popNewWindow("/view/AboutWindowView.fxml", "O programie", 350, 500);
     }
 
     @FXML
@@ -482,7 +482,7 @@ public class MainWindowController extends Navigate implements Initializable {
     }
 
     private String getDateAndTime() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy_MM_dd HH_mm_ss_SSS");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH_mm_ss_SSS");
         LocalDateTime now = LocalDateTime.now();
         return dateTimeFormatter.format(now);
     }
