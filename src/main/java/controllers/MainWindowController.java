@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import services.SensitivityAnalysisCore;
 import services.SimplexCore;
 import util.Configuration;
 import util.Navigate;
@@ -197,9 +198,13 @@ public class MainWindowController extends Navigate implements Initializable {
                             .map(a -> a.getSelectionModel().getSelectedItem())
                             .collect(Collectors.toList()
                             ));
-            //ResultWindowController controller = (ResultWindowController) popNewWindowWithParameter("/view/ResultWindowView.fxml", "Wynik", 550, 400);
-            //controller.setSimplexCore(simplexCore);
             simplexCore.solve();
+            SensitivityAnalysisCore sensitivityAnalysisCore = new SensitivityAnalysisCore(
+                    simplexCore.numberOfConstraints,
+                    simplexCore.artificialVariablesIndexes,
+                    simplexCore.listOfConstraints,
+                    simplexCore.copyOfRHS);
+            sensitivityAnalysisCore.calculatePossibleRightSideConstraintsChange();
 
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");

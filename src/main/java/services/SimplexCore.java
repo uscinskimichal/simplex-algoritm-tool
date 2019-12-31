@@ -1,6 +1,5 @@
 package services;
 
-import controllers.ResultWindowController;
 import exceptions.InfitnitySolutions;
 import util.Configuration;
 import util.Navigate;
@@ -8,8 +7,6 @@ import util.Navigate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,18 +15,20 @@ import java.util.stream.Collectors;
 
 public class SimplexCore extends Navigate {
 
+    public List<BigDecimal> copyOfRHS = new ArrayList<>();
+    public List<Integer> artificialVariablesIndexes = new ArrayList<>();
     MathContext mathContext = new MathContext(4, RoundingMode.HALF_EVEN);
-    private final int numberOfConstraints;
+    public final int numberOfConstraints;
     private int iterationNumber = 0;
     private List<BigDecimal> listOfVariables;
-    private List<List<BigDecimal>> listOfConstraints;
+    public List<List<BigDecimal>> listOfConstraints;
     private List<String> listOfConstraintsMark;
-    private List<BigDecimal> listRightSideOfConstraints = new ArrayList<>();
+    public List<BigDecimal> listRightSideOfConstraints = new ArrayList<>();
     private List<Integer> listOfBasisIndexes = new ArrayList<>();
     private List<BigDecimal> listOfCoefficientsOfVariables;
     private List<BigDecimal> listOfDifferenceVariablesAndCoefficients;
     private List<BigDecimal> listOfBasicConstraintsDividedByXi;
-    private List<BigDecimal> resultVectorList ;
+    private List<BigDecimal> resultVectorList;
     private BigDecimal optimalValue;
     boolean maximization;
     private BigDecimal decisionElement;
@@ -46,7 +45,7 @@ public class SimplexCore extends Navigate {
         extractRightSidesOfConstraints();
         fixNegativeConstraint();
         normalize();
-
+        copyRHS();
         resultVectorList = new ArrayList<>(Collections.nCopies(listOfVariables.size(), new BigDecimal("0.0")));
         listOfBasicConstraintsDividedByXi = new ArrayList<>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
         listOfCoefficientsOfVariables = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
@@ -134,6 +133,7 @@ public class SimplexCore extends Navigate {
                 for (int j = 0; j < listOfConstraints.size(); j++) {
                     if (i == j) {
                         listOfConstraints.get(j).add(new BigDecimal("-1.0"));
+                        artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfConstraints.get(j).add(new BigDecimal("1.0"));
                         listOfBasisIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfVariables.add(new BigDecimal("0.0"));
@@ -151,6 +151,7 @@ public class SimplexCore extends Navigate {
                 for (int j = 0; j < listOfConstraints.size(); j++) {
                     if (i == j) {
                         listOfConstraints.get(j).add(new BigDecimal("1.0"));
+                        artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfBasisIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfVariables.add(new BigDecimal("0.0"));
                     } else
@@ -169,7 +170,9 @@ public class SimplexCore extends Navigate {
                         listOfConstraints.get(j).add(new BigDecimal("0.0"));
                 }
             }
+            listOfConstraintsMark.set(i, "=");
         }
+        System.out.println("PASASD : " + artificialVariablesIndexes);
     }
 
     private void prepareStep() {
@@ -391,10 +394,16 @@ public class SimplexCore extends Navigate {
     }
 
 
-
-    public String returnStringSolution(){
+    public String returnStringSolution() {
         String result = "Wektor rozwiązania zadania optymalnego : " + resultVectorList + "\nWartość funkcji : " + optimalValue;
         return result;
     }
+
+    private List<BigDecimal> copyRHS() {
+        for (int i = 0; i < listRightSideOfConstraints.size(); i++)
+            copyOfRHS.add(i, listRightSideOfConstraints.get(i));
+        return copyOfRHS;
+    }
+
 }
 
