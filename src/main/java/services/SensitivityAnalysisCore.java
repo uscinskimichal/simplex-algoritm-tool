@@ -2,68 +2,93 @@ package services;
 
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SensitivityAnalysisCore {
-    MathContext mathContext = new MathContext(4, RoundingMode.HALF_EVEN);
-    private List<BigDecimal> listRightSideOfConstraints;
     private List<List<BigDecimal>> subTable = new ArrayList<>();
-    private final int numberOfConstraints;
-    private List<Integer> artificialVariablesIndexes;
-    private List<List<BigDecimal>> listOfConstraints;
+    private SimplexCore simplexCore;
 
 
-    public SensitivityAnalysisCore(int numberOfConstraints, List<Integer> artificialVariablesIndexes, List<List<BigDecimal>> listOfConstraints, List<BigDecimal> listRightSideOfConstraints) {
-        this.numberOfConstraints = numberOfConstraints;
-        this.artificialVariablesIndexes = artificialVariablesIndexes;
-        this.listOfConstraints = listOfConstraints;
-        this.listRightSideOfConstraints = listRightSideOfConstraints;
-        //  this.listRightSideOfConstraints = new ArrayList<>();
-        // this.listRightSideOfConstraints.add(new BigDecimal(430));
-        // this.listRightSideOfConstraints.add(new BigDecimal(460));
-        // this.listRightSideOfConstraints.add(new BigDecimal(420));
-        listRightSideOfConstraints.forEach(a -> System.out.println(a.doubleValue()));
+    public SensitivityAnalysisCore(SimplexCore simplexCore) {
+        this.simplexCore = simplexCore;
     }
 
     public void calculatePossibleRightSideConstraintsChange() {
-        for (int i = 0; i < numberOfConstraints; i++) {
+        List<List<Double>> greaterThanNumbers = new ArrayList<List<Double>>();
+        List<List<Double>> lowerThanNumbers = new ArrayList<List<Double>>();
+        double mini = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < simplexCore.numberOfConstraints; i++) {
             List<BigDecimal> temp = new ArrayList<>();
-            for (int j = 0; j < artificialVariablesIndexes.size(); j++) {
-                temp.add(listOfConstraints.get(i).get(artificialVariablesIndexes.get(j)));
+            for (int j = 0; j < simplexCore.artificialVariablesIndexes.size(); j++) {
+                temp.add(simplexCore.listOfConstraints.get(i).get(simplexCore.artificialVariablesIndexes.get(j)));
             }
             subTable.add(temp);
         }
 
         System.out.println(subTable);
-        System.out.println("\n" + listRightSideOfConstraints);
+        System.out.println("\n" + simplexCore.copyOfRHS);
 
         BigDecimal unknown;
-        for (int z = 0; z < numberOfConstraints; z++) {
-            for (int i = 0; i < numberOfConstraints; i++) {
+        for (int z = 0; z < simplexCore.numberOfConstraints; z++) {
+            for (int i = 0; i < simplexCore.numberOfConstraints; i++) {
                 try {
                     unknown = new BigDecimal(0);
                     BigDecimal indexDivide = null;
                     for (int j = 0; j < subTable.get(i).size(); j++) {
                         if (j != z) {
-                            unknown = (subTable.get(i).get(j).negate().multiply(listRightSideOfConstraints.get(j)).add(unknown));
+                            unknown = (subTable.get(i).get(j).negate().multiply(simplexCore.copyOfRHS.get(j)).add(unknown));
                         } else {
                             indexDivide = new BigDecimal(subTable.get(i).get(j) + "");
                         }
-
                     }
-                    if (indexDivide.compareTo(BigDecimal.ZERO) < 0)
-                        System.out.println("Dzielnik : " + indexDivide);
-                    unknown = unknown.divide(indexDivide, mathContext);
-                    System.out.println("Wartość dla ograniczenia (" + (z + 1) + ") : " + unknown.doubleValue());
-                } catch (ArithmeticException | NullPointerException ex) {
-                    System.out.println(ex.getClass() + "zlapalem!");
+                    unknown = unknown.divide(indexDivide, simplexCore.mathContext);
+                    greaterThanNumbers.add(new ArrayList<>());
+                    lowerThanNumbers.add(new ArrayList<>());
+                    if (indexDivide.compareTo(BigDecimal.ZERO) < 0) {
+                        //System.out.println("Dzielnik : " + indexDivide);
+                        lowerThanNumbers.get(z).add(unknown.doubleValue());
+                    } else
+                        greaterThanNumbers.get(z).add(unknown.doubleValue());
+
+                    //System.out.println("Wartość dla ograniczenia (" + (z + 1) + ") : " + unknown.doubleValue());
+                } catch (ArithmeticException ae) {
+                    //System.out.println(ae.getClass() + "zlapalem!");
+                    // greaterThanNumbers.add(Double.POSITIVE_INFINITY);
                 }
             }
+            double maxElement = 0;
+            double minElement;
+            try {
+                minElement = Collections.min(lowerThanNumbers.get(z));
+            } catch (NoSuchElementException | IndexOutOfBoundsException nse) {
+                minElement = Double.POSITIVE_INFINITY;
+            }
+            try {
+                maxElement = Collections.max(greaterThanNumbers.get(z));
+            } catch (NoSuchElementException | IndexOutOfBoundsException nse) {
+                maxElement = Double.NEGATIVE_INFINITY;
+            }
+            System.out.println(maxElement);
+            if (maxElement == Double.NEGATIVE_INFINITY) {
+                maxElement = 0;
+                //double tmp = -maxElement;
+                //maxElement = -minElement;
+                // minElement = tmp;
+            } else if (maxElement < 0 && maxElement != Double.NEGATIVE_INFINITY) {
+                maxElement = -minElement;
+                minElement = 0;
+            }
+            System.out.println("Przedział dla (" + (z + 1) + ") ograniczenia : (" + maxElement + " , " + minElement + ")");
+            System.out.println(greaterThanNumbers);
+            System.out.println(lowerThanNumbers);
+
+            greaterThanNumbers.get(z).clear();
+            lowerThanNumbers.get(z).clear();
             System.out.println("\n\n");
         }
     }
+
+
 }
-// TO DO : ZROBIC PRZEDZIALY JAK SIE ZMIENIA, SPRAWDZIC CO GDY WYSTEPUJE =, ALBO >=

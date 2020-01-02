@@ -20,18 +20,19 @@ public class SimplexCore extends Navigate {
     MathContext mathContext = new MathContext(4, RoundingMode.HALF_EVEN);
     public final int numberOfConstraints;
     private int iterationNumber = 0;
-    private List<BigDecimal> listOfVariables;
+    protected List<BigDecimal> listOfVariables;
     public List<List<BigDecimal>> listOfConstraints;
     private List<String> listOfConstraintsMark;
     public List<BigDecimal> listRightSideOfConstraints = new ArrayList<>();
-    private List<Integer> listOfBasisIndexes = new ArrayList<>();
+    protected List<Integer> listOfBasisIndexes = new ArrayList<>();
     private List<BigDecimal> listOfCoefficientsOfVariables;
     private List<BigDecimal> listOfDifferenceVariablesAndCoefficients;
     private List<BigDecimal> listOfBasicConstraintsDividedByXi;
-    private List<BigDecimal> resultVectorList;
-    private BigDecimal optimalValue;
+    protected List<BigDecimal> resultVectorList;
+    protected BigDecimal optimalValue;
     boolean maximization;
     private BigDecimal decisionElement;
+    public String taskStatus = "SOLVEABLE";
 
     public SimplexCore(List<BigDecimal> listOfVariables, List<List<BigDecimal>> listOfConstraints, boolean maximization, List<String> listOfConstraintsMark) {
         this.listOfVariables = listOfVariables;
@@ -68,6 +69,7 @@ public class SimplexCore extends Navigate {
 //            System.setOut(stdout);
         } catch (InfitnitySolutions nse) {
             System.out.println("Zadanie nieograniczone - nie jest możliwe ustalenie rozwiązania optymalnego.");
+            taskStatus = "UNBOUNDED";
         }
     }
 
@@ -133,8 +135,9 @@ public class SimplexCore extends Navigate {
                 for (int j = 0; j < listOfConstraints.size(); j++) {
                     if (i == j) {
                         listOfConstraints.get(j).add(new BigDecimal("-1.0"));
-                        artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
+                        //artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfConstraints.get(j).add(new BigDecimal("1.0"));
+                        artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfBasisIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfVariables.add(new BigDecimal("0.0"));
                         if (maximization)
@@ -161,6 +164,7 @@ public class SimplexCore extends Navigate {
                 for (int j = 0; j < listOfConstraints.size(); j++) {
                     if (i == j) {
                         listOfConstraints.get(j).add(new BigDecimal("1.0"));
+                        artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfBasisIndexes.add(listOfConstraints.get(j).size() - 1);
                         if (maximization)
                             listOfVariables.add(new BigDecimal("-" + Configuration.M));
@@ -376,6 +380,7 @@ public class SimplexCore extends Navigate {
             System.out.println("Wektor rozwiązania zadania optymalnego : " + resultVectorList);
             System.out.println("Wartość funkcji : " + optimalValue); // TO DO new OptimalSolution
         } else {
+            taskStatus = "NOT_SOLVEABLE";
             System.out.println("\nUkład ograniczeń jest sprzeczny, zadanie nie posiada rozwiązania!"); // TO DO new UnsolveableProblem
         }
     }

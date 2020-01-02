@@ -161,7 +161,8 @@ public class MainWindowController extends Navigate implements Initializable {
     }
 
     @FXML
-    void solve() throws IOException {
+    void solve() {
+        SimplexCore simplexCore = null;
         boolean maximization;
         if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
             maximization = true;
@@ -169,7 +170,7 @@ public class MainWindowController extends Navigate implements Initializable {
             maximization = false;
 
         try {
-            SimplexCore simplexCore = new SimplexCore(
+            simplexCore = new SimplexCore(
                     variablesTextFieldList
                             .stream()
                             .map(a -> {
@@ -199,16 +200,15 @@ public class MainWindowController extends Navigate implements Initializable {
                             .collect(Collectors.toList()
                             ));
             simplexCore.solve();
-            SensitivityAnalysisCore sensitivityAnalysisCore = new SensitivityAnalysisCore(
-                    simplexCore.numberOfConstraints,
-                    simplexCore.artificialVariablesIndexes,
-                    simplexCore.listOfConstraints,
-                    simplexCore.copyOfRHS);
-            sensitivityAnalysisCore.calculatePossibleRightSideConstraintsChange();
 
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
         }
+        if (simplexCore.taskStatus.equals("SOLVEABLE")) {
+            SensitivityAnalysisCore sensitivityAnalysisCore = new SensitivityAnalysisCore(simplexCore);
+            sensitivityAnalysisCore.calculatePossibleRightSideConstraintsChange();
+        } else
+            System.out.println("Analiza wrażliwości nie jest możliwa, zadanie nie ma rozwiązania!");
     }
 
     @FXML
