@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class SimplexCore extends Navigate {
 
     public List<BigDecimal> copyOfRHS = new ArrayList<>();
+    public List<BigDecimal> copyOfRHSDefault = new ArrayList<>();
     public List<Integer> artificialVariablesIndexes = new ArrayList<>();
     MathContext mathContext = new MathContext(4, RoundingMode.HALF_EVEN);
     public final int numberOfConstraints;
@@ -33,9 +34,11 @@ public class SimplexCore extends Navigate {
     boolean maximization;
     private BigDecimal decisionElement;
     public String taskStatus = "SOLVEABLE";
+    protected int numberOfVariables;
 
     public SimplexCore(List<BigDecimal> listOfVariables, List<List<BigDecimal>> listOfConstraints, boolean maximization, List<String> listOfConstraintsMark) {
         this.listOfVariables = listOfVariables;
+        this.numberOfVariables = listOfVariables.size();
         this.listOfConstraints = listOfConstraints;
         this.maximization = maximization;
         this.listOfConstraintsMark = listOfConstraintsMark;
@@ -44,9 +47,11 @@ public class SimplexCore extends Navigate {
 
     public void solve() {
         extractRightSidesOfConstraints();
+        copyRHS(copyOfRHSDefault);
         fixNegativeConstraint();
         normalize();
-        copyRHS();
+        copyRHS(copyOfRHS);
+
         resultVectorList = new ArrayList<>(Collections.nCopies(listOfVariables.size(), new BigDecimal("0.0")));
         listOfBasicConstraintsDividedByXi = new ArrayList<>(Collections.nCopies(numberOfConstraints, new BigDecimal("0.0")));
         listOfCoefficientsOfVariables = new ArrayList<>(Collections.nCopies(this.listOfVariables.size(), new BigDecimal("0.0")));
@@ -176,7 +181,6 @@ public class SimplexCore extends Navigate {
             }
             listOfConstraintsMark.set(i, "=");
         }
-        System.out.println("PASASD : " + artificialVariablesIndexes);
     }
 
     private void prepareStep() {
@@ -398,13 +402,7 @@ public class SimplexCore extends Navigate {
         }
     }
 
-
-    public String returnStringSolution() {
-        String result = "Wektor rozwiązania zadania optymalnego : " + resultVectorList + "\nWartość funkcji : " + optimalValue;
-        return result;
-    }
-
-    private List<BigDecimal> copyRHS() {
+    private List<BigDecimal> copyRHS(List<BigDecimal> copyOfRHS) {
         for (int i = 0; i < listRightSideOfConstraints.size(); i++)
             copyOfRHS.add(i, listRightSideOfConstraints.get(i));
         return copyOfRHS;

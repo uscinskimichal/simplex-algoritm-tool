@@ -207,6 +207,7 @@ public class MainWindowController extends Navigate implements Initializable {
         if (simplexCore.taskStatus.equals("SOLVEABLE")) {
             SensitivityAnalysisCore sensitivityAnalysisCore = new SensitivityAnalysisCore(simplexCore);
             sensitivityAnalysisCore.calculatePossibleRightSideConstraintsChange();
+            sensitivityAnalysisCore.calculatePossibleCoeffFunctionChange();
         } else
             System.out.println("Analiza wrażliwości nie jest możliwa, zadanie nie ma rozwiązania!");
     }
