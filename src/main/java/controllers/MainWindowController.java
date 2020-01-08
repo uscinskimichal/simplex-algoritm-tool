@@ -162,7 +162,7 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @FXML
     void solve() {
-        SimplexCore simplexCore = null;
+        SimplexCore simplexCore;
         boolean maximization;
         if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
             maximization = true;
@@ -201,15 +201,18 @@ public class MainWindowController extends Navigate implements Initializable {
                             ));
             simplexCore.solve();
 
+            if (simplexCore.taskStatus.equals("SOLVEABLE")) {
+                SensitivityAnalysisCore sensitivityAnalysisCore = new SensitivityAnalysisCore(simplexCore);
+                sensitivityAnalysisCore.calculatePossibleRightSideConstraintsChange();
+                sensitivityAnalysisCore.calculatePossibleCoeffFunctionChange();
+            } else
+                System.out.println("Analiza wrażliwości nie jest możliwa, zadanie nie ma rozwiązania!");
+
+
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
         }
-        if (simplexCore.taskStatus.equals("SOLVEABLE")) {
-            SensitivityAnalysisCore sensitivityAnalysisCore = new SensitivityAnalysisCore(simplexCore);
-            sensitivityAnalysisCore.calculatePossibleRightSideConstraintsChange();
-            sensitivityAnalysisCore.calculatePossibleCoeffFunctionChange();
-        } else
-            System.out.println("Analiza wrażliwości nie jest możliwa, zadanie nie ma rozwiązania!");
+
     }
 
     @FXML
