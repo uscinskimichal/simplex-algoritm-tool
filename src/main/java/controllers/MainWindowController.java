@@ -45,22 +45,7 @@ public class MainWindowController extends Navigate implements Initializable {
     private CustomMenuItem setMValueMenuItem;
 
     @FXML
-    private SplitMenuButton setMValueListMenu;
-
-    @FXML
-    private AnchorPane anchorPane;
-
-    @FXML
-    private Menu settings;
-
-    @FXML
-    private Button solveButton;
-
-    @FXML
-    private BorderPane borderPane;
-
-    @FXML
-    private Pane mainPane, constraintsPane, variablesPane;
+    private Pane constraintsPane, variablesPane;
 
     @FXML
     private ComboBox<Integer> numberOfVariablesComboBox, numberOfConstraintsComboBox;
@@ -150,7 +135,7 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @FXML
     void popAboutWindow() throws IOException {
-        popNewWindow("/view/AboutWindowView.fxml", "O programie", 350, 500);
+        popNewWindow("/view/AboutWindowView.fxml", "O programie", 340, 350);
     }
 
     @FXML

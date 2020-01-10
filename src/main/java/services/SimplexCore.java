@@ -71,7 +71,6 @@ public class SimplexCore extends Navigate {
                 System.out.println("----------------------------------------");
             }
             printSolution();
-//            System.setOut(stdout);
         } catch (InfitnitySolutions nse) {
             System.out.println("Zadanie nieograniczone - nie jest możliwe ustalenie rozwiązania optymalnego.");
             taskStatus = "UNBOUNDED";
@@ -140,7 +139,6 @@ public class SimplexCore extends Navigate {
                 for (int j = 0; j < listOfConstraints.size(); j++) {
                     if (i == j) {
                         listOfConstraints.get(j).add(new BigDecimal("-1.0"));
-                        //artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfConstraints.get(j).add(new BigDecimal("1.0"));
                         artificialVariablesIndexes.add(listOfConstraints.get(j).size() - 1);
                         listOfBasisIndexes.add(listOfConstraints.get(j).size() - 1);

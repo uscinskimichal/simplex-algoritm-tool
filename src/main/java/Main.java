@@ -19,7 +19,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/view/MainWindowView.fxml"));
-        primaryStage.setTitle("Simple simplex algorithm calculator");
+        primaryStage.setTitle("Kalkulator - programowanie liniowe");
         primaryStage.setScene(new Scene(root, configuration.getSceneWidth(), configuration.getSceneHeight()));
         primaryStage.setResizable(false);
         primaryStage.getIcons().add(new Image("/image/ApplicationIcon.png"));
