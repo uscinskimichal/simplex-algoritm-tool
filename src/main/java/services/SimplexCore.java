@@ -115,7 +115,7 @@ public class SimplexCore extends Navigate {
         for (int i = 0; i < listOfConstraints.size(); i++)
             System.out.println(listOfConstraints.get(i) + " " + listOfConstraintsMark.get(i) + " " + listRightSideOfConstraints.get(i));
         System.out.println("\nIndeksy bazy:");
-        System.out.println(listOfBasisIndexes);
+        System.out.println(listOfBasisIndexes.stream().map(a -> a + 1).collect(Collectors.toList()));
     }
 
     private void fixNegativeConstraint() {
@@ -298,9 +298,9 @@ public class SimplexCore extends Navigate {
         List<List<BigDecimal>> listOfConstraintsClone = makeADeepCopyOfVariables();
         int pivotIndex = getPivotIndex();
         int indexLeaving = getIndexVariableLeavingBasis();
-        System.out.println("\nElement wychodzący z bazy : " + listOfBasisIndexes.get(indexLeaving));
+        System.out.println("\nElement wychodzący z bazy : " + (listOfBasisIndexes.get(indexLeaving)+1));
         int indexEntering = getIndexVariableEnteringBasis();
-        System.out.println("Indeks wchodzący do bazy : " + indexEntering);
+        System.out.println("Indeks wchodzący do bazy : " + (indexEntering+1));
         System.out.println(" ");
         BigDecimal pivotValue = new BigDecimal("" + listOfConstraints.get(indexLeaving).get(pivotIndex));
         if (pivotValue.doubleValue() < 0) {
@@ -376,9 +376,9 @@ public class SimplexCore extends Navigate {
         if (!checkIfMIsInSolution(resultVectorList)) {
             optimalValue = new BigDecimal("0.0");
             for (int i = 0; i < listOfVariables.size(); i++)
-                optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i), mathContext)));
+                optimalValue = optimalValue.add((resultVectorList.get(i).multiply(listOfVariables.get(i))));
 
-            System.out.println("\nWektor bazowy rozwiązania : " + listOfBasisIndexes);
+            System.out.println("\nWektor bazowy rozwiązania : " + listOfBasisIndexes.stream().map(a -> a + 1).collect(Collectors.toList()));
             System.out.println("Wektor rozwiązania zadania optymalnego : " + resultVectorList);
             System.out.println("Wartość funkcji : " + optimalValue); // TO DO new OptimalSolution
         } else {

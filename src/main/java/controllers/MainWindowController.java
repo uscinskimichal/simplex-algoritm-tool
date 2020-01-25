@@ -1,6 +1,7 @@
 package controllers;
 
 import dialogs.Dialog;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,10 +16,7 @@ import services.SimplexCore;
 import util.Configuration;
 import util.Navigate;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -147,6 +145,7 @@ public class MainWindowController extends Navigate implements Initializable {
 
     @FXML
     void solve() {
+
         SimplexCore simplexCore;
         boolean maximization;
         if (comboBoxFunctionCriteria.getSelectionModel().getSelectedItem().equals("Max"))
@@ -193,6 +192,10 @@ public class MainWindowController extends Navigate implements Initializable {
             } else
                 System.out.println("Analiza wrażliwości nie jest możliwa, zadanie nie ma rozwiązania!");
 
+                if (stdout == System.out)
+                    Dialog.popInformationDialog("Wynik", "", "Wynik działania programu został zapisany na konsolę.");
+                else
+                    Dialog.popInformationDialog("Wynik", "", "Wynik działania programu został zapisany do pliku tekstowego.");
 
         } catch (NumberFormatException nfe) {
             Dialog.popErrorDialog("Błąd!", "Błędne dane", "Wprowadzono błędne dane, upewnij się, że separatorem jest \".\" Oraz czy wprowadzono wszystkie dane.");
@@ -463,7 +466,8 @@ public class MainWindowController extends Navigate implements Initializable {
 
     private void enableFileLogging() {
         try {
-            FileOutputStream fs = new FileOutputStream("SIMPLEX_LOG_" + getDateAndTime() + ".txt");
+            File file = new File("./SIMPLEX_LOG_" + getDateAndTime() + ".txt");
+            FileOutputStream fs = new FileOutputStream(file);
             PrintStream out = new PrintStream(fs);
             System.setOut(out);
         } catch (FileNotFoundException e) {

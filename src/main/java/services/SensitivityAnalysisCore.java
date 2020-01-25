@@ -112,17 +112,17 @@ public class SensitivityAnalysisCore {
             BigDecimal result = new BigDecimal("0");
 
             for (int y = 0; y < basisCoeffValues.size(); y++)
-                result = result.add(basisCoeffValues.get(y).multiply(tableColumn.get(y)));
+                result = result.add(basisCoeffValues.get(y).multiply(tableColumn.get(y)),simplexCore.mathContext);
 
             if (nonBasisCoeffIndexes.get(i) < simplexCore.numberOfVariables && simplexCore.maximization)
-                System.out.println("Wartość funkcji celu nie zmieni się, przy modyfikacji zmiennej X" + (nonBasisCoeffIndexes.get(i) + 1) + " jeżeli wartość tej zmiennej będzie mniejsza niż : " + result);
+                System.out.println("Wartość funkcji celu nie zmieni się, przy modyfikacji współczynnika a(" + (nonBasisCoeffIndexes.get(i) + 1) + ") jeżeli wartość tej zmiennej będzie mniejsza niż : " + result);
             else if (nonBasisCoeffIndexes.get(i) < simplexCore.numberOfVariables && !simplexCore.maximization)
-                System.out.println("Wartość funkcji celu nie zmieni się, przy modyfikacji zmiennej X" + (nonBasisCoeffIndexes.get(i) + 1) + " jeżeli wartość tej zmiennej będzie większa niż : " + result);
+                System.out.println("Wartość funkcji celu nie zmieni się, przy modyfikacji współczynnika a(" + (nonBasisCoeffIndexes.get(i) + 1) + ") jeżeli wartość tej zmiennej będzie większa niż : " + result);
 
         }
         basisCoeffIndexes.forEach(a -> {
             if (a < simplexCore.numberOfVariables)
-                System.out.println("Zmiana wartości współczynnika funkcji celu X" + (a + 1) + ", spowoduje zmianę wartości funkcji celu.");
+                System.out.println("Zmiana wartości współczynnika funkcji celu a(" + (a + 1) + "), spowoduje zmianę wartości funkcji celu.");
         });
 
     }
